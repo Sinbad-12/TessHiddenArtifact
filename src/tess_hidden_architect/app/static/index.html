@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TESS: The Hidden Architect</title>
+  <style>
+    :root {
+      --bg: #07090e;
+      --card-bg: #0e131f;
+      --card-border: #1a2236;
+      --text: #e2e8f0;
+      --text-muted: #8896ab;
+      --observed-color: #00e5ff;
+      --withheld-color: #ffb703;
+      --inference-color: #10b981;
+      --hidden-color: #a855f7;
+      --barrier-color: #ef4444;
+      --font-mono: 'Consolas', 'Courier New', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Mission Header */
+    header {
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .title-group h1 {
+      font-size: 26px;
+      letter-spacing: 2px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .title-group h1 span.badge {
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(0, 229, 255, 0.15);
+      color: var(--observed-color);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+    }
+    .title-group p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Flow Stages */
+    .flow-steps {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(14, 19, 31, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+    .flow-step {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .flow-step.active {
+      color: #ffffff;
+    }
+    .flow-step.active.observe { color: var(--observed-color); }
+    .flow-step.active.infer { color: var(--inference-color); }
+    .flow-step.active.reveal { color: var(--withheld-color); }
+    .flow-arrow { color: #334155; }
+
+    /* Concept Legend Badges */
+    .concept-legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .concept-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .concept-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .concept-card.observed .concept-header { color: var(--observed-color); }
+    .concept-card.withheld .concept-header { color: var(--withheld-color); }
+    .concept-card.inference .concept-header { color: var(--inference-color); }
+    .concept-card.hidden .concept-header { color: var(--hidden-color); }
+    .concept-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .concept-card.observed .concept-dot { background: var(--observed-color); }
+    .concept-card.withheld .concept-dot { background: var(--withheld-color); }
+    .concept-card.inference .concept-dot { background: var(--inference-color); }
+    .concept-card.hidden .concept-dot { background: var(--hidden-color); }
+    .concept-card p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Chart Container */
+    .chart-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .chart-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #ffffff;
+      font-family: var(--font-mono);
+    }
+    .chart-canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 380px;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-infer {
+      background: #10b981;
+      color: #064e3b;
+    }
+    .btn-infer:hover:not(:disabled) {
+      background: #34d399;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+    }
+    .btn-reveal {
+      background: #ffb703;
+      color: #451a03;
+    }
+    .btn-reveal:hover:not(:disabled) {
+      background: #fcd34d;
+      box-shadow: 0 0 16px rgba(255, 183, 3, 0.4);
+    }
+    .btn-reset {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+    }
+    .btn-reset:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+    button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* Telemetry Cards */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .metric-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-bottom: 6px;
+    }
+    .metric-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      font-family: var(--font-mono);
+    }
+    .metric-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-family: var(--font-mono);
+    }
+
+    /* Ground Truth Banner */
+    .truth-card {
+      background: rgba(168, 85, 247, 0.08);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 8px;
+      padding: 18px;
+      margin-bottom: 24px;
+      display: none;
+    }
+    .truth-card.active {
+      display: block;
+    }
+    .truth-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--hidden-color);
+      font-family: var(--font-mono);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .truth-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    /* Scientific Assumptions Section */
+    .assumptions-section {
+      background: rgba(14, 19, 31, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+    .assumptions-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-bottom: 8px;
+    }
+    .assumptions-list {
+      list-style-type: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .assumptions-list li {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .assumptions-list li::before {
+      content: "•";
+      color: var(--observed-color);
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title-group">
+        <h1>TESS: THE HIDDEN ARCHITECT <span class="badge">MVP DEMO</span></h1>
+        <p>Reconstruct a hidden planetary system from noisy starlight.</p>
+      </div>
+      <div class="flow-steps">
+        <div class="flow-step active observe" id="step-observe"><span>1.</span> OBSERVE</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" id="step-infer"><span>2.</span> INFER</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" id="step-predict"><span>3.</span> PREDICT</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" id="step-reveal"><span>4.</span> REVEAL</div>
+      </div>
+    </header>
+
+    <!-- Concept Clarification Badges -->
+    <div class="concept-legend">
+      <div class="concept-card observed">
+        <div class="concept-header"><span class="concept-dot"></span> OBSERVED DATA</div>
+        <p>Training light curve segment accessible to inference. Contains 2 full transits.</p>
+      </div>
+      <div class="concept-card withheld">
+        <div class="concept-header"><span class="concept-dot"></span> WITHHELD DATA</div>
+        <p>Future observation baseline strictly isolated from inference until reveal.</p>
+      </div>
+      <div class="concept-card inference">
+        <div class="concept-header"><span class="concept-dot"></span> INFERENCE</div>
+        <p>Deterministic period recovery & future transit prediction.</p>
+      </div>
+      <div class="concept-card hidden">
+        <div class="concept-header"><span class="concept-dot"></span> HIDDEN TRUTH</div>
+        <p>Ground-truth system parameters, permanently hidden until unblinded.</p>
+      </div>
+    </div>
+
+    <!-- Chart Panel -->
+    <div class="chart-panel">
+      <div class="chart-header">
+        <div class="chart-title" id="chart-caption">STELLAR FLUX TIME SERIES [NORMALIZED]</div>
+      </div>
+      <div class="chart-canvas-wrapper">
+        <canvas id="lightCurveCanvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Action Controls -->
+    <div class="controls-bar">
+      <button class="btn-infer" id="btnInfer" onclick="runInference()">⚡ RUN INFERENCE</button>
+      <button class="btn-reveal" id="btnReveal" onclick="revealWithheld()" disabled>🔓 REVEAL WITHHELD DATA</button>
+      <button class="btn-reset" onclick="resetDemo()">↺ RESET DEMO</button>
+    </div>
+
+    <!-- Telemetry Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">INFERRED PERIOD</div>
+        <div class="metric-value" id="valPeriod">—</div>
+        <div class="metric-sub" id="subPeriod">Run inference to search period</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">PREDICTED NEXT TRANSIT</div>
+        <div class="metric-value" id="valPrediction">—</div>
+        <div class="metric-sub" id="subPrediction">Awaiting ephemeris calculation</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label" id="labelEval">PREDICTION STATUS</div>
+        <div class="metric-value" id="valEval">OBSERVING</div>
+        <div class="metric-sub" id="subEval">Data available: Days 0.00 – 6.21</div>
+      </div>
+    </div>
+
+    <!-- Ground Truth Reveal Card -->
+    <div class="truth-card" id="truthCard">
+      <div class="truth-title">★ GROUND TRUTH REVEALED (UNBLINDED COMPARISON)</div>
+      <div class="truth-grid">
+        <div>
+          <div class="metric-label">TRUE PERIOD</div>
+          <div class="metric-value" style="font-size: 18px;" id="truePeriod">—</div>
+          <div class="metric-sub" id="truePeriodCompare">—</div>
+        </div>
+        <div>
+          <div class="metric-label">TRUE SEMI-MAJOR AXIS</div>
+          <div class="metric-value" style="font-size: 18px;" id="trueSma">—</div>
+          <div class="metric-sub">0.035 AU (~5.24e6 km)</div>
+        </div>
+        <div>
+          <div class="metric-label">RADIUS RATIO (Rp / Rs)</div>
+          <div class="metric-value" style="font-size: 18px;" id="trueRadius">—</div>
+          <div class="metric-sub">Theoretical depth = 1.000%</div>
+        </div>
+        <div>
+          <div class="metric-label">NEXT TRANSIT TIMING ERROR</div>
+          <div class="metric-value" style="font-size: 18px; color: #10b981;" id="trueError">—</div>
+          <div class="metric-sub" id="trueErrorSub">Target locked within observation tolerance</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scientific Assumptions -->
+    <div class="assumptions-section">
+      <div class="assumptions-title">Scientific Assumptions (MVP)</div>
+      <ul class="assumptions-list">
+        <li>One host star + one planet</li>
+        <li>Keplerian orbital propagation</li>
+        <li>Uniform stellar brightness</li>
+        <li>Geometric transit disk-overlap area</li>
+        <li>Deterministic seeded Gaussian measurement noise</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    let sessionState = null;
+    const canvas = document.getElementById('lightCurveCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Resize canvas for sharp rendering
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+      renderChart();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    async function fetchState() {
+      try {
+        const res = await fetch('/api/state');
+        sessionState = await res.json();
+        updateUI();
+      } catch (err) {
+        console.error('Failed to fetch state:', err);
+      }
+    }
+
+    async function runInference() {
+      const btn = document.getElementById('btnInfer');
+      btn.disabled = true;
+      btn.textContent = 'INFERRING...';
+      try {
+        const res = await fetch('/api/infer', { method: 'POST' });
+        sessionState = await res.json();
+        updateUI();
+      } catch (err) {
+        alert('Inference error: ' + err);
+      } finally {
+        btn.textContent = '⚡ RUN INFERENCE';
+      }
+    }
+
+    async function revealWithheld() {
+      const btn = document.getElementById('btnReveal');
+      btn.disabled = true;
+      btn.textContent = 'REVEALING...';
+      try {
+        const res = await fetch('/api/reveal', { method: 'POST' });
+        sessionState = await res.json();
+        updateUI();
+      } catch (err) {
+        alert('Reveal error: ' + err);
+      }
+    }
+
+    async function resetDemo() {
+      try {
+        const res = await fetch('/api/reset', { method: 'POST' });
+        sessionState = await res.json();
+        updateUI();
+      } catch (err) {
+        alert('Reset error: ' + err);
+      }
+    }
+
+    function updateUI() {
+      if (!sessionState) return;
+
+      const { stage, inferred, revealed, inference, evaluation, hidden_ground_truth, split_time_days } = sessionState;
+
+      // Update flow indicator
+      document.getElementById('step-infer').className = 'flow-step' + (inferred ? ' active infer' : '');
+      document.getElementById('step-predict').className = 'flow-step' + (inferred ? ' active infer' : '');
+      document.getElementById('step-reveal').className = 'flow-step' + (revealed ? ' active reveal' : '');
+
+      // Buttons
+      document.getElementById('btnInfer').disabled = inferred;
+      document.getElementById('btnReveal').disabled = !inferred || revealed;
+
+      // Metrics
+      if (inferred && inference) {
+        document.getElementById('valPeriod').textContent = `${inference.inferred_period_days.toFixed(3)} d`;
+        document.getElementById('subPeriod').textContent = `${inference.inferred_period_hours.toFixed(1)} hrs (${inference.inferred_period_seconds.toFixed(0)} s)`;
+        document.getElementById('valPrediction').textContent = `Day ${inference.predicted_next_transit_days.toFixed(3)}`;
+        document.getElementById('subPrediction').textContent = `${inference.predicted_next_transit_hours.toFixed(1)} hrs into mission`;
+
+        document.getElementById('labelEval').textContent = 'PREDICTION STATUS';
+        document.getElementById('valEval').textContent = 'LOCKED';
+        document.getElementById('valEval').style.color = '#10b981';
+        document.getElementById('subEval').textContent = 'Awaiting withheld data reveal to verify';
+      } else {
+        document.getElementById('valPeriod').textContent = '—';
+        document.getElementById('subPeriod').textContent = 'Run inference to search period';
+        document.getElementById('valPrediction').textContent = '—';
+        document.getElementById('subPrediction').textContent = 'Awaiting ephemeris calculation';
+        document.getElementById('labelEval').textContent = 'PREDICTION STATUS';
+        document.getElementById('valEval').textContent = 'OBSERVING';
+        document.getElementById('valEval').style.color = '#ffffff';
+        document.getElementById('subEval').textContent = `Data available: Days 0.00 – ${split_time_days.toFixed(2)}`;
+      }
+
+      // Evaluation & Ground Truth
+      const truthCard = document.getElementById('truthCard');
+      if (revealed && evaluation && hidden_ground_truth) {
+        truthCard.classList.add('active');
+        document.getElementById('labelEval').textContent = 'TIMING ERROR';
+        document.getElementById('valEval').textContent = `Δt = ${evaluation.timing_error_seconds.toFixed(2)} s`;
+        document.getElementById('valEval').style.color = '#10b981';
+        document.getElementById('subEval').textContent = `Actual: Day ${evaluation.actual_transit_days.toFixed(3)} | Pred: Day ${evaluation.predicted_transit_days.toFixed(3)}`;
+
+        document.getElementById('truePeriod').textContent = `${hidden_ground_truth.true_period_days.toFixed(3)} d (${hidden_ground_truth.true_period_seconds.toFixed(1)} s)`;
+        const pErr = Math.abs(inference.inferred_period_seconds - hidden_ground_truth.true_period_seconds);
+        document.getElementById('truePeriodCompare').textContent = `Period recovery error: ${pErr.toFixed(2)} s (${(pErr / hidden_ground_truth.true_period_seconds * 100).toFixed(4)}%)`;
+        document.getElementById('trueSma').textContent = `${hidden_ground_truth.true_semi_major_axis_au.toFixed(4)} AU`;
+        document.getElementById('trueRadius').textContent = `${hidden_ground_truth.true_radius_ratio.toFixed(3)} (R_p / R_s)`;
+        document.getElementById('trueError').textContent = `Δt = ${evaluation.timing_error_seconds.toFixed(2)} seconds`;
+        document.getElementById('trueErrorSub').textContent = `Predicted Day ${evaluation.predicted_transit_days.toFixed(3)} vs Actual Day ${evaluation.actual_transit_days.toFixed(3)}`;
+      } else {
+        truthCard.classList.remove('active');
+      }
+
+      renderChart();
+    }
+
+    function renderChart() {
+      if (!sessionState) return;
+
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const W = rect.width;
+      const H = rect.height;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Margins
+      const padL = 60;
+      const padR = 24;
+      const padT = 24;
+      const padB = 40;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+
+      // Coordinate extents
+      const minT = 0.0;
+      const maxT = sessionState.total_duration_days || 9.5;
+      const minF = 0.985;
+      const maxF = 1.005;
+
+      const toX = (t) => padL + ((t - minT) / (maxT - minT)) * plotW;
+      const toY = (f) => padT + ((maxF - f) / (maxF - minF)) * plotH;
+
+      // Split boundary
+      const splitT = sessionState.split_time_days || 6.21;
+      const splitX = toX(splitT);
+
+      // 1. Shaded Withheld Region
+      ctx.fillStyle = 'rgba(255, 183, 3, 0.04)';
+      ctx.fillRect(splitX, padT, toX(maxT) - splitX, plotH);
+
+      // 2. Grid lines & Ticks
+      ctx.strokeStyle = '#161e31';
+      ctx.lineWidth = 1;
+      ctx.font = '10px Consolas, monospace';
+      ctx.fillStyle = '#64748b';
+
+      // Y Grid
+      const yTicks = [0.985, 0.990, 0.995, 1.000, 1.005];
+      yTicks.forEach(f => {
+        const y = toY(f);
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(padL + plotW, y);
+        ctx.stroke();
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(f.toFixed(3), padL - 8, y);
+      });
+
+      // X Grid
+      for (let t = 0; t <= maxT; t += 1.0) {
+        const x = toX(t);
+        ctx.beginPath();
+        ctx.moveTo(x, padT);
+        ctx.lineTo(x, padT + plotH);
+        ctx.stroke();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(t.toFixed(0), x, padT + plotH + 8);
+      }
+
+      // Axis labels
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px Consolas, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('TIME [DAYS]', padL + plotW / 2, H - 10);
+
+      ctx.save();
+      ctx.translate(14, padT + plotH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('NORMALIZED FLUX (F / F₀)', 0, 0);
+      ctx.restore();
+
+      // 3. Withheld Barrier Line
+      ctx.strokeStyle = '#ef4444';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(splitX, padT);
+      ctx.lineTo(splitX, padT + plotH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#ef4444';
+      ctx.font = '9px Consolas, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('WITHHELD BOUNDARY (DAY ' + splitT.toFixed(2) + ')', splitX + 6, padT + 14);
+
+      // 4. Plot Observed Data points
+      const obs = sessionState.observed_data;
+      if (obs && obs.time_days) {
+        ctx.fillStyle = 'rgba(0, 229, 255, 0.75)';
+        for (let i = 0; i < obs.time_days.length; i += 2) { // sample cadence
+          const x = toX(obs.time_days[i]);
+          const y = toY(obs.flux[i]);
+          ctx.fillRect(x - 1, y - 1, 2, 2);
+        }
+      }
+
+      // 5. Plot Withheld Data if revealed
+      if (sessionState.revealed && sessionState.withheld_data) {
+        const wth = sessionState.withheld_data;
+        ctx.fillStyle = 'rgba(255, 183, 3, 0.85)';
+        for (let i = 0; i < wth.time_days.length; i += 2) {
+          const x = toX(wth.time_days[i]);
+          const y = toY(wth.flux[i]);
+          ctx.fillRect(x - 1, y - 1, 2, 2);
+        }
+      }
+
+      // 6. Prediction Marker
+      if (sessionState.inferred && sessionState.inference) {
+        const predT = sessionState.inference.predicted_next_transit_days;
+        const predX = toX(predT);
+
+        // Dashed prediction line
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(predX, padT);
+        ctx.lineTo(predX, padT + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Target badge
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.arc(predX, toY(0.990), 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.font = '10px Consolas, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('▼ PREDICTED TRANSIT (DAY ' + predT.toFixed(2) + ')', predX, padT + 28);
+      }
+
+      // Legend in top-right
+      ctx.textAlign = 'right';
+      ctx.font = '10px Consolas, monospace';
+      ctx.fillStyle = '#00e5ff';
+      ctx.fillText('■ Observed Data', padL + plotW - 10, padT + 12);
+      if (sessionState.revealed) {
+        ctx.fillStyle = '#ffb703';
+        ctx.fillText('■ Withheld Data (Revealed)', padL + plotW - 10, padT + 26);
+      } else {
+        ctx.fillStyle = '#64748b';
+        ctx.fillText('░ Withheld Region (Blind Test)', padL + plotW - 10, padT + 26);
+      }
+    }
+
+    // Initial load
+    resizeCanvas();
+    fetchState();
+  </script>
+</body>
+</html>

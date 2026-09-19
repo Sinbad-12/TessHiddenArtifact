@@ -16,6 +16,9 @@ dev = [
     "pytest>=8.0.0",
 ]
 
+[project.scripts]
+tess-demo = "tess_hidden_architect.app.main:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

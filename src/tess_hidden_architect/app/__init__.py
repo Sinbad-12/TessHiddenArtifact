@@ -1,5 +1,7 @@
-"""Application and presentation layer.
+"""Application and presentation layer for TESS: The Hidden Architect."""
 
-Reserved for future implementation. Phase 0 establishes the package
-structure only. No UI or rendering is implemented yet.
-"""
+from tess_hidden_architect.app.demo import DemoSession
+from tess_hidden_architect.app.main import main
+from tess_hidden_architect.app.server import create_demo_server
+
+__all__ = ["DemoSession", "create_demo_server", "main"]
