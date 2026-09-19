@@ -122,3 +122,72 @@ def compute_total_angular_momentum(
     for idx in range(len(masses)):
         L += masses[idx] * np.cross(positions[idx], velocities[idx])
     return L
+
+
+def compute_center_of_mass(
+    positions: np.ndarray,
+    masses: np.ndarray,
+) -> np.ndarray:
+    """Compute 3D position vector of the system center of mass.
+
+    Parameters
+    ----------
+    positions : np.ndarray, shape (N, 3)
+        Position vectors in meters.
+    masses : np.ndarray, shape (N,)
+        Masses in kg.
+
+    Returns
+    -------
+    np.ndarray, shape (3,)
+        Center of mass position in meters.
+    """
+    total_mass = float(np.sum(masses))
+    if total_mass <= 0:
+        raise ValueError("Total mass must be strictly positive")
+    return np.sum(positions * masses[:, None], axis=0) / total_mass
+
+
+def compute_total_linear_momentum(
+    velocities: np.ndarray,
+    masses: np.ndarray,
+) -> np.ndarray:
+    """Compute total linear momentum vector of the system.
+
+    Parameters
+    ----------
+    velocities : np.ndarray, shape (N, 3)
+        Velocity vectors in m/s.
+    masses : np.ndarray, shape (N,)
+        Masses in kg.
+
+    Returns
+    -------
+    np.ndarray, shape (3,)
+        Total linear momentum vector in kg m / s.
+    """
+    return np.sum(velocities * masses[:, None], axis=0)
+
+
+def compute_center_of_mass_velocity(
+    velocities: np.ndarray,
+    masses: np.ndarray,
+) -> np.ndarray:
+    """Compute 3D velocity vector of the system center of mass.
+
+    Parameters
+    ----------
+    velocities : np.ndarray, shape (N, 3)
+        Velocity vectors in m/s.
+    masses : np.ndarray, shape (N,)
+        Masses in kg.
+
+    Returns
+    -------
+    np.ndarray, shape (3,)
+        Center of mass velocity in m/s.
+    """
+    total_mass = float(np.sum(masses))
+    if total_mass <= 0:
+        raise ValueError("Total mass must be strictly positive")
+    return compute_total_linear_momentum(velocities, masses) / total_mass
