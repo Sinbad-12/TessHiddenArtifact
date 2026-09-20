@@ -1,642 +1,2380 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>TESS: THE HIDDEN ARCHITECT</title>
-<style>
-:root{
-  --bg:#020408;
-  --panel:rgba(6,12,22,.88);
-  --line:rgba(105,190,255,.22);
-  --cyan:#55d9ff;
-  --cyan2:#8be9ff;
-  --violet:#a88cff;
-  --green:#62ffb0;
-  --amber:#ffc766;
-  --red:#ff6b8a;
-  --text:#e8f4ff;
-  --muted:#71879c;
-}
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);
-font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-body{
-  overflow-x:hidden;
-  background:
-    radial-gradient(circle at 50% 20%,rgba(39,93,155,.25),transparent 38%),
-    radial-gradient(circle at 80% 80%,rgba(105,62,180,.15),transparent 35%),
-    #020408;
-}
-body:before{
-  content:"";position:fixed;inset:0;pointer-events:none;opacity:.28;
-  background-image:
-    linear-gradient(rgba(80,150,190,.04) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(80,150,190,.04) 1px,transparent 1px);
-  background-size:42px 42px;
-}
-body:after{
-  content:"";position:fixed;inset:0;pointer-events:none;
-  background:linear-gradient(transparent 50%,rgba(0,0,0,.12) 50%);
-  background-size:100% 4px;opacity:.25;
-}
-.app{max-width:1500px;margin:auto;padding:20px 26px 36px;position:relative}
-.topbar{
-  height:64px;display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid var(--line);margin-bottom:22px
-}
-.brand{display:flex;align-items:center;gap:14px}
-.logo{
-  width:36px;height:36px;border:1px solid var(--cyan);border-radius:50%;
-  box-shadow:0 0 28px rgba(85,217,255,.45),inset 0 0 14px rgba(85,217,255,.2);
-  position:relative
-}
-.logo:after{content:"";position:absolute;width:8px;height:8px;background:var(--cyan);
-border-radius:50%;top:13px;left:13px;box-shadow:0 0 14px var(--cyan)}
-.brand h1{font-size:16px;letter-spacing:.24em;margin:0;font-weight:650;text-shadow:0 0 12px rgba(85,217,255,0.4)}
-.brand span{display:block;color:var(--muted);font-size:9px;letter-spacing:.18em;margin-top:3px}
-.status{display:flex;align-items:center;gap:9px;color:var(--green);font-size:10px;
-letter-spacing:.16em;text-transform:uppercase}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--green);
-box-shadow:0 0 14px var(--green);animation:pulse 1.8s infinite}
-@keyframes pulse{50%{opacity:.35;transform:scale(.72)}}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TESS: THE HIDDEN ARCHITECT</title>
 
-.hero{display:grid;grid-template-columns:1.6fr .8fr;gap:18px;margin-bottom:18px}
-.heroTitle{padding:18px 4px}
-.kicker{color:var(--cyan);font-size:10px;letter-spacing:.25em;text-transform:uppercase}
-.hero h2{font-size:clamp(30px,4vw,58px);line-height:.95;letter-spacing:-.045em;
-font-weight:500;margin:13px 0 15px;max-width:780px}
-.hero h2 em{font-style:normal;color:var(--cyan2);text-shadow:0 0 20px rgba(139,233,255,0.4)}
-.hero p{max-width:680px;color:#8ea5ba;font-size:14px;line-height:1.65;margin:0}
-.missionCard,.panel{
-  background:linear-gradient(145deg,rgba(11,21,36,.92),rgba(4,8,15,.88));
-  border:1px solid var(--line);border-radius:14px;
-  box-shadow:0 20px 60px rgba(0,0,0,.35),inset 0 1px rgba(255,255,255,.03);
-}
-.missionCard{padding:20px}
-.cardLabel{font-size:9px;color:var(--muted);letter-spacing:.2em;text-transform:uppercase}
-.bigStatus{font-size:23px;margin:10px 0 16px;letter-spacing:.02em;color:var(--cyan2);text-shadow:0 0 10px rgba(85,217,255,0.3)}
-.miniGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.metric{padding:11px;border:1px solid rgba(105,190,255,.12);background:rgba(0,0,0,.22);
-border-radius:9px}
-.metric small{display:block;color:var(--muted);font-size:8px;letter-spacing:.15em;text-transform:uppercase}
-.metric strong{display:block;font-size:17px;margin-top:5px;font-weight:500}
+  <style>
+    :root{
+      --bg:#020408;
+      --panel:rgba(6,12,22,.88);
+      --panel2:rgba(8,17,30,.94);
+      --line:rgba(105,190,255,.22);
+      --line2:rgba(105,190,255,.42);
+      --cyan:#55d9ff;
+      --cyan2:#8be9ff;
+      --violet:#a88cff;
+      --green:#62ffb0;
+      --amber:#ffc766;
+      --red:#ff6b8a;
+      --text:#e8f4ff;
+      --muted:#71879c;
 
-.layout{display:grid;grid-template-columns:1.35fr .8fr;gap:18px}
-.panel{padding:17px;overflow:hidden}
-.panelHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.panelTitle{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#b6cce0}
-.panelTag{font-size:8px;color:var(--cyan);border:1px solid rgba(85,217,255,.3);
-padding:4px 7px;border-radius:4px;letter-spacing:.13em;background:rgba(85,217,255,0.05)}
+      --obs-glow:rgba(85,217,255,.16);
+      --obs-glow-strong:rgba(85,217,255,.38);
+      --obs-violet-glow:rgba(168,140,255,.22);
+      --obs-green-glow:rgba(98,255,176,.24);
+    }
 
-#orbitCanvas{width:100%;height:430px;display:block;border-radius:10px;
-background:radial-gradient(circle at 50% 50%,rgba(18,42,68,.3),transparent 65%)}
-.chartCanvas{width:100%;height:225px;display:block}
-.ttvCanvas{width:100%;height:205px;display:block}
+    *{
+      box-sizing:border-box;
+    }
 
-.telemetry{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.telemetry .metric{min-height:72px}
-.telemetry strong{font-variant-numeric:tabular-nums}
+    html{
+      scroll-behavior:smooth;
+    }
 
-.note{
-  margin-top:12px;padding:12px 14px;border-left:2px solid var(--cyan);
-  background:rgba(85,217,255,.06);color:#9bb1c5;font-size:11px;line-height:1.5
-}
-.note strong{color:#e5f5ff}
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 50% -10%,rgba(48,105,160,.18),transparent 38%),
+        radial-gradient(circle at 10% 20%,rgba(80,60,160,.08),transparent 28%),
+        var(--bg);
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      overflow-x:hidden;
+    }
 
-.timeline{
-  margin-top:18px;padding:14px 8px 4px;display:grid;grid-template-columns:repeat(4,1fr);
-  gap:8px
-}
-.step{position:relative;text-align:center;padding:11px 4px 16px;color:#536b80;
-font-size:9px;letter-spacing:.18em;text-transform:uppercase}
-.step:before{content:"";width:9px;height:9px;border-radius:50%;display:block;
-margin:0 auto 9px;background:#182532;border:1px solid #395064}
-.step:after{content:"";position:absolute;height:1px;background:#1a2c3b;
-left:calc(50% + 9px);right:calc(-50% + 9px);top:15px}
-.step:last-child:after{display:none}
-.step.active{color:var(--cyan)}
-.step.active:before{background:var(--cyan);border-color:var(--cyan);
-box-shadow:0 0 15px rgba(85,217,255,.8)}
-.step.done{color:#94b1c6}
-.step.done:before{background:var(--green);border-color:var(--green)}
-.step.done:after{background:rgba(98,255,176,.4)}
+    body:before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:20;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,.018) 0,
+          rgba(255,255,255,.018) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+      opacity:.22;
+    }
 
-.reveal{
-  margin-top:18px;padding:22px;border:1px solid rgba(168,140,255,.38);
-  background:linear-gradient(120deg,rgba(88,61,160,.18),rgba(20,14,40,.25));
-  border-radius:14px;display:none
-}
-.reveal.visible{display:block;animation:appear .7s ease both}
-@keyframes appear{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.revealTitle{color:var(--violet);font-size:10px;letter-spacing:.22em;text-transform:uppercase}
-.reveal h3{font-size:27px;margin:8px 0}
-.reveal p{color:#9eacc5;line-height:1.6;font-size:12px}
-.truthGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px}
-.truth{padding:13px;border:1px solid rgba(168,140,255,.2);border-radius:8px;background:rgba(0,0,0,0.2)}
-.truth small{display:block;color:#7e779e;font-size:8px;letter-spacing:.15em;text-transform:uppercase}
-.truth strong{display:block;margin-top:5px;font-size:16px;color:#d8ccff}
+    body:after{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(
+          ellipse at center,
+          transparent 45%,
+          rgba(0,0,0,.32) 100%
+        );
+      z-index:19;
+    }
 
-.footer{margin-top:22px;color:#41566a;font-size:8px;letter-spacing:.16em;text-transform:uppercase;
-display:flex;justify-content:space-between}
+    .app{
+      width:min(1500px,calc(100% - 36px));
+      margin:0 auto;
+      padding:18px 0 110px;
+      position:relative;
+      z-index:1;
+    }
 
-@media(max-width:950px){
- .hero,.layout{grid-template-columns:1fr}
- #orbitCanvas{height:350px}
-}
-@media(max-width:600px){
- .app{padding:14px}
- .hero h2{font-size:34px}
- .telemetry,.truthGrid{grid-template-columns:1fr 1fr}
-}
-</style>
+    .app:after{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(
+          ellipse at center,
+          transparent 45%,
+          rgba(0,0,0,.35) 100%
+        );
+      opacity:.35;
+      z-index:50;
+    }
+
+    .topbar{
+      position:relative;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px 0 18px;
+      border-bottom:1px solid rgba(120,180,220,.16);
+    }
+
+    .topbar:after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:-1px;
+      height:1px;
+      background:linear-gradient(
+        90deg,
+        transparent,
+        rgba(85,217,255,.55),
+        transparent
+      );
+      opacity:.65;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .logo{
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      border:1px solid rgba(139,233,255,.55);
+      box-shadow:
+        0 0 16px rgba(85,217,255,.2),
+        inset 0 0 14px rgba(85,217,255,.12);
+      position:relative;
+      animation:logoPulse 4s ease-in-out infinite;
+    }
+
+    .logo:before,
+    .logo:after{
+      content:"";
+      position:absolute;
+      inset:6px;
+      border:1px solid rgba(139,233,255,.38);
+      border-radius:50%;
+    }
+
+    .logo:after{
+      inset:13px;
+      background:var(--cyan2);
+      box-shadow:0 0 12px rgba(139,233,255,.75);
+      border:none;
+    }
+
+    .brandTitle{
+      letter-spacing:.22em;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .brandSub{
+      color:var(--muted);
+      font-size:10px;
+      letter-spacing:.18em;
+      margin-top:2px;
+    }
+
+    .online{
+      color:var(--green);
+      font-size:10px;
+      letter-spacing:.16em;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .onlineDot{
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:var(--green);
+      box-shadow:0 0 12px rgba(98,255,176,.8);
+      animation:onlinePulse 2s ease-in-out infinite;
+    }
+
+    .hero{
+      padding:44px 0 30px;
+      display:grid;
+      grid-template-columns:minmax(0,1.45fr) minmax(300px,.55fr);
+      gap:30px;
+      align-items:end;
+    }
+
+    .kicker{
+      color:var(--cyan);
+      letter-spacing:.2em;
+      font-size:11px;
+      font-weight:700;
+      margin-bottom:12px;
+    }
+
+    h1{
+      font-size:clamp(36px,5vw,76px);
+      line-height:.98;
+      letter-spacing:-.045em;
+      max-width:950px;
+      margin:0;
+      font-weight:700;
+      text-shadow:
+        0 0 35px rgba(85,217,255,.08);
+      animation:titleGlow 6s ease-in-out infinite;
+    }
+
+    .heroText{
+      max-width:850px;
+      margin:18px 0 0;
+      color:#9db2c5;
+      font-size:15px;
+      line-height:1.7;
+    }
+
+    .missionCard{
+      position:relative;
+      padding:22px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(11,24,40,.95),
+          rgba(4,9,17,.94)
+        );
+      border:1px solid var(--line);
+      box-shadow:
+        0 20px 60px rgba(0,0,0,.32),
+        inset 0 1px 0 rgba(255,255,255,.035);
+      overflow:hidden;
+    }
+
+    .missionCard:before,
+    .panel:before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:12%;
+      right:12%;
+      height:1px;
+      background:linear-gradient(
+        90deg,
+        transparent,
+        rgba(85,217,255,.6),
+        transparent
+      );
+      opacity:.65;
+    }
+
+    .missionCard:after{
+      content:"";
+      position:absolute;
+      width:220px;
+      height:220px;
+      right:-120px;
+      top:-130px;
+      border-radius:50%;
+      background:rgba(85,217,255,.07);
+      filter:blur(35px);
+    }
+
+    .missionLabel{
+      color:var(--muted);
+      font-size:10px;
+      letter-spacing:.18em;
+    }
+
+    .bigStatus{
+      margin-top:8px;
+      font-size:29px;
+      letter-spacing:.08em;
+      font-weight:700;
+      position:relative;
+      display:inline-block;
+    }
+
+    .bigStatus:after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:-7px;
+      height:1px;
+      background:linear-gradient(
+        90deg,
+        var(--cyan),
+        transparent
+      );
+      box-shadow:0 0 10px rgba(85,217,255,.4);
+    }
+
+    .metrics{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      margin-top:22px;
+    }
+
+    .metric{
+      padding:11px 0;
+      border-top:1px solid rgba(105,190,255,.15);
+      transition:.25s ease;
+    }
+
+    .metric:hover{
+      border-top-color:rgba(85,217,255,.48);
+      transform:translateY(-2px);
+    }
+
+    .metric span{
+      display:block;
+      color:var(--muted);
+      font-size:9px;
+      letter-spacing:.15em;
+      margin-bottom:5px;
+    }
+
+    .metric strong{
+      font-size:14px;
+      font-weight:600;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .panel{
+      position:relative;
+      overflow:hidden;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(8,16,28,.9),
+          rgba(3,8,15,.94)
+        );
+      border:1px solid var(--line);
+      box-shadow:
+        0 20px 60px rgba(0,0,0,.26),
+        inset 0 1px 0 rgba(255,255,255,.025);
+      transition:
+        transform .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease;
+    }
+
+    .panel:hover{
+      border-color:rgba(105,190,255,.34);
+      box-shadow:
+        0 22px 70px rgba(0,0,0,.34),
+        0 0 28px rgba(85,217,255,.035);
+    }
+
+    .panelHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(105,190,255,.12);
+      background:rgba(255,255,255,.012);
+    }
+
+    .panelTitle{
+      font-size:11px;
+      letter-spacing:.15em;
+      font-weight:700;
+    }
+
+    .panelTag{
+      color:var(--cyan);
+      font-size:9px;
+      letter-spacing:.14em;
+    }
+
+    canvas{
+      display:block;
+      width:100%;
+      height:340px;
+      background:
+        radial-gradient(
+          circle at center,
+          rgba(20,50,80,.12),
+          transparent 62%
+        );
+    }
+
+    .telemetry{
+      margin-top:18px;
+    }
+
+    .telemetryGrid{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:1px;
+      background:rgba(105,190,255,.10);
+    }
+
+    .telemetryItem{
+      min-height:95px;
+      padding:15px;
+      background:rgba(4,10,18,.96);
+    }
+
+    .telemetryItem span{
+      display:block;
+      color:var(--muted);
+      font-size:9px;
+      letter-spacing:.13em;
+      margin-bottom:9px;
+    }
+
+    .telemetryItem strong{
+      font-size:20px;
+      letter-spacing:.01em;
+    }
+
+    .scienceNote{
+      padding:15px 17px;
+      color:#91a7ba;
+      font-size:11px;
+      line-height:1.65;
+      border-top:1px solid rgba(105,190,255,.1);
+    }
+
+    .timeline{
+      position:relative;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      margin:26px 0 18px;
+      padding-top:25px;
+    }
+
+    .timeline:before{
+      content:"MISSION SEQUENCE";
+      position:absolute;
+      left:0;
+      top:0;
+      color:var(--muted);
+      font-size:9px;
+      letter-spacing:.2em;
+    }
+
+    .timeline:after{
+      content:"";
+      position:absolute;
+      left:6%;
+      right:6%;
+      top:53px;
+      height:1px;
+      background:linear-gradient(
+        90deg,
+        rgba(85,217,255,.15),
+        rgba(85,217,255,.35),
+        rgba(85,217,255,.15)
+      );
+    }
+
+    .step{
+      position:relative;
+      padding:17px 12px 14px;
+      border:1px solid rgba(105,190,255,.12);
+      background:rgba(5,11,19,.76);
+      color:var(--muted);
+      text-align:center;
+      font-size:10px;
+      letter-spacing:.13em;
+      z-index:1;
+      transition:.3s ease;
+    }
+
+    .step:before{
+      content:"";
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      position:absolute;
+      top:49px;
+      left:50%;
+      transform:translate(-50%,-50%);
+      background:#132232;
+      border:1px solid rgba(105,190,255,.3);
+      z-index:2;
+    }
+
+    .step.active{
+      color:var(--cyan2);
+      border-color:rgba(85,217,255,.45);
+      box-shadow:
+        0 0 22px rgba(85,217,255,.09),
+        inset 0 0 20px rgba(85,217,255,.025);
+    }
+
+    .step.active:before{
+      background:var(--cyan);
+      border-color:var(--cyan2);
+      box-shadow:0 0 14px rgba(85,217,255,.7);
+    }
+
+    .step.done{
+      color:#9bd4c0;
+      border-color:rgba(98,255,176,.25);
+    }
+
+    .step.done:before{
+      background:var(--green);
+      border-color:var(--green);
+      box-shadow:0 0 12px rgba(98,255,176,.5);
+    }
+
+    .revealPanel{
+      position:relative;
+      margin-top:18px;
+      border:1px solid rgba(98,255,176,.3);
+      background:
+        linear-gradient(
+          145deg,
+          rgba(6,25,23,.94),
+          rgba(3,10,15,.96)
+        );
+      box-shadow:
+        0 0 50px rgba(98,255,176,.06),
+        inset 0 0 50px rgba(98,255,176,.025);
+      overflow:hidden;
+    }
+
+    .revealPanel:before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:-30%;
+      width:30%;
+      height:100%;
+      background:linear-gradient(
+        90deg,
+        transparent,
+        rgba(98,255,176,.12),
+        transparent
+      );
+      animation:revealSweep 4s linear infinite;
+    }
+
+    .revealHeader{
+      padding:22px;
+      border-bottom:1px solid rgba(98,255,176,.14);
+    }
+
+    .revealKicker{
+      color:var(--green);
+      font-size:10px;
+      letter-spacing:.2em;
+      font-weight:700;
+    }
+
+    .revealTitle{
+      font-size:clamp(28px,4vw,54px);
+      line-height:1;
+      margin-top:8px;
+      letter-spacing:-.035em;
+      text-shadow:0 0 25px rgba(98,255,176,.12);
+    }
+
+    .revealSubtitle{
+      color:#92ad9f;
+      max-width:800px;
+      font-size:12px;
+      line-height:1.65;
+      margin-top:12px;
+    }
+
+    .truthGrid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:1px;
+      background:rgba(98,255,176,.1);
+    }
+
+    .truthCard{
+      padding:20px;
+      background:rgba(3,11,13,.95);
+      transition:.25s ease;
+    }
+
+    .truthCard:hover{
+      background:rgba(8,25,23,.95);
+      transform:translateY(-2px);
+    }
+
+    .truthCard span{
+      display:block;
+      color:#668277;
+      font-size:9px;
+      letter-spacing:.14em;
+      margin-bottom:9px;
+    }
+
+    .truthCard strong{
+      font-size:21px;
+      color:#d8fff0;
+    }
+
+    /* CINEMATIC REVEAL OVERLAY */
+
+    #revealOverlay{
+      position:fixed;
+      inset:0;
+      z-index:10000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      background:
+        radial-gradient(
+          circle at center,
+          rgba(20,90,75,.18),
+          rgba(0,4,7,.94) 58%,
+          rgba(0,0,0,.985)
+        );
+      backdrop-filter:blur(8px);
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition:
+        opacity .45s ease,
+        visibility .45s ease;
+    }
+
+    #revealOverlay.show{
+      opacity:1;
+      visibility:visible;
+    }
+
+    #revealOverlay:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent 0,
+          transparent 5px,
+          rgba(98,255,176,.018) 6px
+        );
+      pointer-events:none;
+    }
+
+    .revealEvent{
+      position:relative;
+      width:min(900px,100%);
+      padding:55px 45px 48px;
+      text-align:center;
+      border:1px solid rgba(98,255,176,.42);
+      background:
+        linear-gradient(
+          145deg,
+          rgba(4,21,22,.96),
+          rgba(2,8,13,.97)
+        );
+      box-shadow:
+        0 0 120px rgba(98,255,176,.12),
+        inset 0 0 80px rgba(98,255,176,.035);
+      overflow:hidden;
+      transform:scale(.94);
+      transition:transform .65s cubic-bezier(.16,1,.3,1);
+    }
+
+    #revealOverlay.show .revealEvent{
+      transform:scale(1);
+    }
+
+    .revealEvent:before{
+      content:"";
+      position:absolute;
+      top:0;
+      bottom:0;
+      width:2px;
+      left:-10%;
+      background:linear-gradient(
+        to bottom,
+        transparent,
+        rgba(98,255,176,.8),
+        transparent
+      );
+      box-shadow:0 0 30px rgba(98,255,176,.6);
+      animation:eventScan 2.2s ease-in-out infinite;
+    }
+
+    .revealSignal{
+      display:inline-flex;
+      align-items:center;
+      gap:9px;
+      color:var(--green);
+      font-size:10px;
+      letter-spacing:.24em;
+      font-weight:800;
+      margin-bottom:20px;
+    }
+
+    .revealSignalDot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--green);
+      box-shadow:0 0 18px rgba(98,255,176,.9);
+      animation:signalPulse 1s ease-in-out infinite;
+    }
+
+    .eventEyebrow{
+      color:#7c9b91;
+      font-size:11px;
+      letter-spacing:.2em;
+      margin-bottom:12px;
+    }
+
+    .eventTitle{
+      margin:0;
+      font-size:clamp(42px,8vw,88px);
+      line-height:.9;
+      letter-spacing:-.055em;
+      color:#eafff7;
+      text-shadow:
+        0 0 25px rgba(98,255,176,.25),
+        0 0 70px rgba(98,255,176,.08);
+    }
+
+    .eventBody{
+      max-width:690px;
+      margin:22px auto 0;
+      color:#9bb6aa;
+      font-size:14px;
+      line-height:1.7;
+    }
+
+    .eventStats{
+      display:flex;
+      justify-content:center;
+      gap:1px;
+      margin:30px auto 0;
+      max-width:620px;
+      background:rgba(98,255,176,.12);
+    }
+
+    .eventStat{
+      flex:1;
+      padding:17px 14px;
+      background:rgba(2,12,13,.94);
+    }
+
+    .eventStat span{
+      display:block;
+      color:#668277;
+      font-size:9px;
+      letter-spacing:.14em;
+      margin-bottom:6px;
+    }
+
+    .eventStat strong{
+      color:#dcfff0;
+      font-size:19px;
+    }
+
+    .eventHint{
+      margin-top:25px;
+      color:#557267;
+      font-size:9px;
+      letter-spacing:.17em;
+    }
+
+    /* MISSION CONTROLS */
+
+    #missionControls{
+      position:fixed;
+      left:50%;
+      bottom:16px;
+      transform:translateX(-50%);
+      z-index:9999;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:9px;
+      background:rgba(2,7,12,.92);
+      border:1px solid rgba(105,190,255,.28);
+      box-shadow:
+        0 15px 50px rgba(0,0,0,.5),
+        0 0 35px rgba(85,217,255,.05);
+      backdrop-filter:blur(14px);
+    }
+
+    #missionControls button{
+      appearance:none;
+      border:1px solid rgba(105,190,255,.28);
+      background:rgba(10,22,36,.9);
+      color:#cceeff;
+      padding:10px 15px;
+      font-size:10px;
+      font-weight:700;
+      letter-spacing:.13em;
+      cursor:pointer;
+      transition:.22s ease;
+    }
+
+    #missionControls button:hover{
+      border-color:rgba(85,217,255,.7);
+      color:#fff;
+      box-shadow:
+        0 0 18px rgba(85,217,255,.12),
+        inset 0 0 14px rgba(85,217,255,.05);
+      transform:translateY(-1px);
+    }
+
+    #missionControls button:active{
+      transform:translateY(0);
+    }
+
+    #missionStatus{
+      padding:0 9px;
+      color:var(--muted);
+      font-size:9px;
+      letter-spacing:.13em;
+      white-space:nowrap;
+    }
+
+    @keyframes logoPulse{
+      0%,100%{box-shadow:0 0 16px rgba(85,217,255,.2),inset 0 0 14px rgba(85,217,255,.12)}
+      50%{box-shadow:0 0 25px rgba(85,217,255,.4),inset 0 0 18px rgba(85,217,255,.18)}
+    }
+
+    @keyframes onlinePulse{
+      0%,100%{opacity:.65}
+      50%{opacity:1}
+    }
+
+    @keyframes titleGlow{
+      0%,100%{text-shadow:0 0 35px rgba(85,217,255,.06)}
+      50%{text-shadow:0 0 45px rgba(85,217,255,.13)}
+    }
+
+    @keyframes revealSweep{
+      0%{left:-30%}
+      100%{left:130%}
+    }
+
+    @keyframes eventScan{
+      0%{left:-10%}
+      50%{left:110%}
+      100%{left:-10%}
+    }
+
+    @keyframes signalPulse{
+      0%,100%{transform:scale(.8);opacity:.55}
+      50%{transform:scale(1.2);opacity:1}
+    }
+
+    @media(max-width:1000px){
+      .hero{
+        grid-template-columns:1fr;
+      }
+
+      .telemetryGrid{
+        grid-template-columns:repeat(3,1fr);
+      }
+    }
+
+    @media(max-width:760px){
+      .app{
+        width:min(100% - 20px,1500px);
+      }
+
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      .metrics{
+        grid-template-columns:repeat(2,1fr);
+      }
+
+      .telemetryGrid{
+        grid-template-columns:repeat(2,1fr);
+      }
+
+      .truthGrid{
+        grid-template-columns:1fr;
+      }
+
+      .timeline{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .timeline:after{
+        display:none;
+      }
+
+      .step:before{
+        display:none;
+      }
+
+      #missionControls{
+        width:calc(100% - 20px);
+        justify-content:center;
+        flex-wrap:wrap;
+      }
+
+      #missionStatus{
+        display:none;
+      }
+
+      .revealEvent{
+        padding:40px 20px 34px;
+      }
+
+      .eventStats{
+        flex-direction:column;
+      }
+
+      canvas{
+        height:280px;
+      }
+    }
+  </style>
 </head>
+
 <body>
+
 <div class="app">
 
-<header class="topbar">
-  <div class="brand">
-    <div class="logo"></div>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <div class="brandTitle">TESS: THE HIDDEN ARCHITECT</div>
+        <div class="brandSub">TRANSIT RECONSTRUCTION MISSION · SCIENCE OPERATIONS</div>
+      </div>
+    </div>
+
+    <div class="online">
+      <span class="onlineDot"></span>
+      SYSTEM ONLINE
+    </div>
+  </header>
+
+  <section class="hero">
+
     <div>
-      <h1>TESS: THE HIDDEN ARCHITECT</h1>
-      <span>TRANSIT RECONSTRUCTION MISSION · SCIENCE OPERATIONS</span>
-    </div>
-  </div>
-  <div class="status"><i class="dot"></i> SYSTEM ONLINE</div>
-</header>
+      <div class="kicker">UNKNOWN SYSTEM · OBSERVATIONAL INFERENCE</div>
 
-<section class="hero">
-  <div class="heroTitle">
-    <div class="kicker">UNKNOWN SYSTEM · OBSERVATIONAL INFERENCE</div>
-    <h2>Can you reconstruct<br>what the telescope <em>cannot see?</em></h2>
-    <p>
-      A hidden planetary system leaves fingerprints in starlight.
-      Observe the signal. Infer its structure. Predict the next transit.
-      Then test your hypothesis against withheld observations.
-    </p>
-  </div>
+      <h1>
+        Can you reconstruct what the telescope <em>cannot see?</em>
+      </h1>
 
-  <div class="missionCard">
-    <div class="cardLabel">MISSION STATE</div>
-    <div class="bigStatus" id="missionState">INITIALIZING</div>
-    <div class="miniGrid">
-      <div class="metric"><small>Observation</small><strong id="obsDays">—</strong></div>
-      <div class="metric"><small>Cadence</small><strong id="cadence">—</strong></div>
-      <div class="metric"><small>Period</small><strong id="period">—</strong></div>
-      <div class="metric"><small>Detection</small><strong id="detection">—</strong></div>
-    </div>
-  </div>
-</section>
-
-<div class="layout">
-
-<section>
-  <div class="panel">
-    <div class="panelHead">
-      <div class="panelTitle">ORBITAL RECONSTRUCTION // 3-D GRAVITATIONAL DYNAMICS</div>
-      <div class="panelTag">N-BODY MODEL</div>
-    </div>
-    <canvas id="orbitCanvas"></canvas>
-  </div>
-
-  <div class="panel" style="margin-top:18px">
-    <div class="panelHead">
-      <div class="panelTitle">OBSERVED PHOTOMETRY // HIGH-PRECISION FLUX</div>
-      <div class="panelTag" id="curveTag">LIVE DATA</div>
-    </div>
-    <canvas id="lightCanvas" class="chartCanvas"></canvas>
-  </div>
-</section>
-
-<aside>
-  <div class="panel">
-    <div class="panelHead">
-      <div class="panelTitle">OBSERVATORY TELEMETRY</div>
-      <div class="panelTag">TESS-LIKE</div>
-    </div>
-    <div class="telemetry">
-      <div class="metric"><small>Transit count</small><strong id="transits">—</strong></div>
-      <div class="metric"><small>TTV RMS</small><strong id="ttvRms">—</strong></div>
-      <div class="metric"><small>Peak-to-peak</small><strong id="ttvPeak">—</strong></div>
-      <div class="metric"><small>Control RMS</small><strong id="controlRms">—</strong></div>
-      <div class="metric"><small>Timing amplification</small><strong id="amplification">—</strong></div>
-      <div class="metric"><small>System bodies</small><strong>2 + hidden</strong></div>
+      <p class="heroText">
+        A hidden planetary system leaves fingerprints in starlight.
+        Observe the signal. Infer its structure. Predict the next transit.
+        Then test your hypothesis against withheld observations.
+      </p>
     </div>
 
-    <div class="note" id="scienceNote">
-      <strong>OBSERVATION:</strong><br>
-      Repeated transits are being examined for structured timing deviations.
-    </div>
-  </div>
+    <div class="missionCard">
 
-  <div class="panel" style="margin-top:18px">
-    <div class="panelHead">
-      <div class="panelTitle">TTV FINGERPRINT // O-C RESIDUALS</div>
-      <div class="panelTag">SECONDS</div>
+      <div class="missionLabel">MISSION STATE</div>
+      <div class="bigStatus" id="missionState">OBSERVED</div>
+
+      <div class="metrics">
+
+        <div class="metric">
+          <span>Observation</span>
+          <strong id="obsDays">—</strong>
+        </div>
+
+        <div class="metric">
+          <span>Cadence</span>
+          <strong id="cadence">—</strong>
+        </div>
+
+        <div class="metric">
+          <span>Period</span>
+          <strong id="period">—</strong>
+        </div>
+
+        <div class="metric">
+          <span>Detection</span>
+          <strong id="detection">—</strong>
+        </div>
+
+      </div>
     </div>
-    <canvas id="ttvCanvas" class="ttvCanvas"></canvas>
-  </div>
-</aside>
+
+  </section>
+
+  <main>
+
+    <section class="grid">
+
+      <div class="panel">
+        <div class="panelHeader">
+          <div class="panelTitle">
+            ORBITAL RECONSTRUCTION // 3-D GRAVITATIONAL DYNAMICS
+          </div>
+          <div class="panelTag">N-BODY MODEL</div>
+        </div>
+
+        <canvas id="orbitCanvas"></canvas>
+      </div>
+
+      <div class="panel">
+        <div class="panelHeader">
+          <div class="panelTitle">
+            OBSERVED PHOTOMETRY // HIGH-PRECISION FLUX
+          </div>
+          <div class="panelTag">LIVE DATA</div>
+        </div>
+
+        <canvas id="lightCanvas"></canvas>
+      </div>
+
+    </section>
+
+    <section class="panel telemetry">
+
+      <div class="panelHeader">
+        <div class="panelTitle">
+          OBSERVATORY TELEMETRY
+        </div>
+        <div class="panelTag">TESS-LIKE</div>
+      </div>
+
+      <div class="telemetryGrid">
+
+        <div class="telemetryItem">
+          <span>Transit count</span>
+          <strong id="transits">—</strong>
+        </div>
+
+        <div class="telemetryItem">
+          <span>TTV RMS</span>
+          <strong id="ttvRms">—</strong>
+        </div>
+
+        <div class="telemetryItem">
+          <span>Peak-to-peak</span>
+          <strong id="ttvPeak">—</strong>
+        </div>
+
+        <div class="telemetryItem">
+          <span>Control RMS</span>
+          <strong id="controlRms">—</strong>
+        </div>
+
+        <div class="telemetryItem">
+          <span>Timing amplification</span>
+          <strong id="amplification">—</strong>
+        </div>
+
+        <div class="telemetryItem">
+          <span>System bodies</span>
+          <strong id="systemBodies">2 + hidden</strong>
+        </div>
+
+      </div>
+
+      <div class="scienceNote" id="scienceNote">
+        <strong>OBSERVATION:</strong><br>
+        Repeated transits are being examined for structured timing deviations.
+      </div>
+
+    </section>
+
+    <section class="panel telemetry">
+
+      <div class="panelHeader">
+        <div class="panelTag">SECONDS</div>
+      </div>
+
+      <canvas id="ttvCanvas"></canvas>
+
+    </section>
+
+    <section class="timeline">
+
+      <div class="step active" id="sObserve">
+        OBSERVE
+      </div>
+
+      <div class="step" id="sInfer">
+        INFER
+      </div>
+
+      <div class="step" id="sPredict">
+        PREDICT
+      </div>
+
+      <div class="step" id="sReveal">
+        REVEAL
+      </div>
+
+    </section>
+
+    <section
+      class="revealPanel"
+      id="revealPanel"
+      style="display:none;"
+    >
+
+      <div class="revealHeader">
+
+        <div class="revealKicker">
+          WITHHELD OBSERVATION VERIFIED
+        </div>
+
+        <div class="revealTitle">
+          THE HIDDEN COMPANION LEAVES A GRAVITATIONAL FINGERPRINT.
+        </div>
+
+        <div class="revealSubtitle">
+          The measured transit timings contain additional structure beyond
+          the isolated control system. The withheld observation tests the
+          predicted ephemeris without exposing the hidden system beforehand.
+        </div>
+
+      </div>
+
+      <div class="truthGrid">
+
+        <div class="truthCard">
+          <span>Hidden body</span>
+          <strong id="truthBody">—</strong>
+        </div>
+
+        <div class="truthCard">
+          <span>Role</span>
+          <strong id="truthRole">—</strong>
+        </div>
+
+        <div class="truthCard">
+          <span>TTV RMS</span>
+          <strong id="revealRms">—</strong>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
 </div>
 
-<div class="panel timeline">
-  <div class="step active" id="sObserve">OBSERVE</div>
-  <div class="step" id="sInfer">INFER</div>
-  <div class="step" id="sPredict">PREDICT</div>
-  <div class="step" id="sReveal">REVEAL</div>
-</div>
 
-<div class="reveal" id="revealPanel">
-  <div class="revealTitle">WITHHELD OBSERVATION VERIFIED</div>
-  <h3>THE HIDDEN COMPANION LEAVES A GRAVITATIONAL FINGERPRINT.</h3>
-  <p>
-    The measured transit timings contain additional structure beyond the
-    isolated control system. The withheld observation tests the predicted
-    ephemeris without exposing the hidden system beforehand.
-  </p>
-  <div class="truthGrid">
-    <div class="truth"><small>Hidden body</small><strong>Planet B</strong></div>
-    <div class="truth"><small>Role</small><strong>Gravitational companion</strong></div>
-    <div class="truth"><small>TTV RMS</small><strong id="revealRms">—</strong></div>
+<!-- CINEMATIC REVEAL -->
+
+<div id="revealOverlay">
+
+  <div class="revealEvent">
+
+    <div class="revealSignal">
+      <span class="revealSignalDot"></span>
+      WITHHELD OBSERVATION VERIFIED
+    </div>
+
+    <div class="eventEyebrow">
+      GRAVITATIONAL RECONSTRUCTION COMPLETE
+    </div>
+
+    <h2 class="eventTitle">
+      PLANET B
+    </h2>
+
+    <div class="eventBody">
+      The hidden companion has been exposed.
+      Its gravitational influence was encoded in the timing of repeated
+      transits, allowing the unseen architecture to be reconstructed
+      from starlight alone.
+    </div>
+
+    <div class="eventStats">
+
+      <div class="eventStat">
+        <span>ROLE</span>
+        <strong id="overlayRole">GRAVITATIONAL COMPANION</strong>
+      </div>
+
+      <div class="eventStat">
+        <span>TTV RMS</span>
+        <strong id="overlayRms">—</strong>
+      </div>
+
+      <div class="eventStat">
+        <span>STATUS</span>
+        <strong>VERIFIED</strong>
+      </div>
+
+    </div>
+
+    <div class="eventHint">
+      GROUND TRUTH UNSEALED · MISSION COMPLETE
+    </div>
+
   </div>
-</div>
-
-<footer class="footer">
-  <span>TESS HIDDEN ARCHITECT // SYNTHETIC SCIENCE DEMONSTRATOR</span>
-  <span>GROUND TRUTH SEALED UNTIL REVEAL</span>
-</footer>
 
 </div>
+
 
 <script>
-const $=id=>document.getElementById(id);
 
-let state=null;
-let animationStart=performance.now();
+const $ = id => document.getElementById(id);
+
+let state = null;
+let animationStart = performance.now();
+let previousStage = null;
+let revealShown = false;
+
 
 async function loadState(){
+
   try{
-    const r=await fetch('/api/state',{cache:'no-store'});
-    state=await r.json();
+
+    const response = await fetch(
+      "/api/state",
+      {
+        cache:"no-store"
+      }
+    );
+
+    if(!response.ok){
+      throw new Error("State request failed");
+    }
+
+    state = await response.json();
+
     render();
-  }catch(e){
-    $('missionState').textContent='CONNECTION LOST';
+
+  }catch(error){
+
+    console.error(error);
+
   }
+
 }
 
-function fmt(v,d=2){
-  if(v===undefined||v===null||Number.isNaN(v))return '—';
-  return Number(v).toFixed(d);
-}
 
 function render(){
-  if(!state)return;
 
-  const stage=(state.stage||state.status||'OBSERVE').toUpperCase();
+  if(!state) return;
 
-  $('missionState').textContent=stage;
-  $('obsDays').textContent=state.observation_window_days?
-    fmt(state.observation_window_days,1)+' d':'27.4 d';
-  $('cadence').textContent=state.cadence_minutes?
-    fmt(state.cadence_minutes,0)+' min':'10 min';
+  $("missionState").textContent =
+    state.stage || "UNKNOWN";
 
-  const inf=state.inference||{};
-  $('period').textContent=inf.period_days?
-    fmt(inf.period_days,3)+' d':
-    (state.period_days?fmt(state.period_days,3)+' d':'—');
+  if(state.observation){
 
-  $('detection').textContent=inf.detection_score?
-    fmt(inf.detection_score,1)+' σ':'LOCKED';
+    $("obsDays").textContent =
+      `${state.observation.baseline_days ?? "—"} d`;
 
-  const t=state.ttv||{};
-  $('transits').textContent=t.transit_count??'—';
-  $('ttvRms').textContent=t.rms_seconds!=null?fmt(t.rms_seconds,1)+' s':'—';
-  $('ttvPeak').textContent=t.peak_to_peak_seconds!=null?fmt(t.peak_to_peak_seconds,1)+' s':'—';
-  $('controlRms').textContent=t.control_rms_seconds!=null?fmt(t.control_rms_seconds,1)+' s':'—';
-  $('amplification').textContent=t.rms_amplification!=null?
-    fmt(t.rms_amplification,2)+'×':'—';
+    $("cadence").textContent =
+      `${state.observation.cadence_minutes ?? "—"} min`;
 
-  setStage(stage);
-  drawTTV(t);
-  drawLightCurve();
-  drawOrbit(stage);
-
-  const revealed=state.hidden_ground_truth &&
-                 state.hidden_ground_truth.hidden_companion &&
-                 state.hidden_ground_truth.hidden_companion.revealed;
-
-  if(revealed){
-    $('revealPanel').classList.add('visible');$('revealRms').textContent=t.rms_seconds!=null?fmt(t.rms_seconds,1)+' s':'—';
-    $('scienceNote').innerHTML=
-      '<strong>REVEAL:</strong><br>Withheld data verifies the predicted timing structure. The hidden companion is now exposed.';
-  }else{
-    $('revealPanel').classList.remove('visible');
   }
+
+  const inference =
+    state.inference || {};
+
+  const evaluation =
+    state.evaluation || {};
+
+  if(
+    state.stage === "INFERRED" ||
+    state.stage === "REVEALED"
+  ){
+
+    if(inference.period_days != null){
+
+      $("period").textContent =
+        `${Number(inference.period_days).toFixed(2)} d`;
+
+    }
+
+    $("detection").textContent =
+      "LOCKED";
+
+  }else{
+
+    $("period").textContent = "—";
+    $("detection").textContent = "AWAITING";
+
+  }
+
+
+  $("transits").textContent =
+    state.observation?.transit_count ??
+    state.observation?.transits ??
+    "—";
+
+
+  if(state.ttv){
+
+    $("ttvRms").textContent =
+      `${Number(state.ttv.rms_seconds ?? 0).toFixed(1)} s`;
+
+    $("ttvPeak").textContent =
+      `${Number(state.ttv.peak_to_peak_seconds ?? 0).toFixed(1)} s`;
+
+    $("controlRms").textContent =
+      `${Number(state.ttv.control_rms_seconds ?? 0).toFixed(1)} s`;
+
+    $("amplification").textContent =
+      `${Number(state.ttv.amplification ?? 0).toFixed(2)}×`;
+
+  }
+
+
+  setStage(state.stage || "OBSERVED");
+
+  if(state.stage === "REVEALED"){
+
+    $("revealPanel").style.display = "block";
+
+    $("truthBody").textContent =
+      state.hidden_ground_truth?.body ??
+      state.hidden_ground_truth?.name ??
+      "Planet B";
+
+    $("truthRole").textContent =
+      state.hidden_ground_truth?.role ??
+      "Gravitational companion";
+
+    const rms =
+      evaluation.ttv_rms_seconds ??
+      state.ttv?.rms_seconds ??
+      null;
+
+    $("revealRms").textContent =
+      rms != null
+        ? `${Number(rms).toFixed(1)} s`
+        : "—";
+
+    $("scienceNote").innerHTML =
+      "<strong>REVEAL:</strong><br>" +
+      "Withheld data verifies the predicted timing structure. " +
+      "The hidden companion is now exposed.";
+
+    showRevealOverlay();
+
+  }else{
+
+    $("revealPanel").style.display = "none";
+
+    $("scienceNote").innerHTML =
+      "<strong>OBSERVATION:</strong><br>" +
+      "Repeated transits are being examined for structured timing deviations.";
+
+  }
+
+  drawLightCurve();
+  drawTTV(performance.now());
 }
+
+
+function showRevealOverlay(){
+
+  if(revealShown) return;
+
+  revealShown = true;
+
+  const rms =
+    state?.evaluation?.ttv_rms_seconds ??
+    state?.ttv?.rms_seconds ??
+    null;
+
+  $("overlayRms").textContent =
+    rms != null
+      ? `${Number(rms).toFixed(1)} s`
+      : "—";
+
+  $("overlayRole").textContent =
+    state?.hidden_ground_truth?.role ??
+    "GRAVITATIONAL COMPANION";
+
+  $("revealOverlay").classList.add("show");
+
+  /*
+    The overlay remains visible long enough for the
+    user to actually read the scientific result.
+  */
+
+  setTimeout(() => {
+
+    $("revealOverlay").classList.remove("show");
+
+    setTimeout(() => {
+
+      $("revealOverlay").style.pointerEvents = "none";
+
+      document
+        .getElementById("revealPanel")
+        ?.scrollIntoView({
+          behavior:"smooth",
+          block:"center"
+        });
+
+    }, 500);
+
+  }, 6500);
+
+}
+
 
 function setStage(stage){
-  const order=['OBSERVE','INFER','PREDICT','REVEAL'];
-  let current=order.findIndex(x=>stage.includes(x));
-  if(current<0)current=0;
 
-  order.forEach((x,i)=>{
-    const el=$('s'+x[0]+x.slice(1).toLowerCase());
-    if(!el)return;
-    el.className='step '+(i===current?'active ':'')+(i<current?'done':'');
-  });
+  const order = [
+    "OBSERVED",
+    "INFERRED",
+    "REVEALED"
+  ];
+
+  const current =
+    order.indexOf(stage);
+
+  const steps = [
+    $("sObserve"),
+    $("sInfer"),
+    $("sPredict"),
+    $("sReveal")
+  ];
+
+  steps.forEach(
+    step => {
+      step.classList.remove(
+        "active",
+        "done"
+      );
+    }
+  );
+
+  if(current >= 0){
+
+    steps[0].classList.add(
+      current === 0
+        ? "active"
+        : "done"
+    );
+
+  }
+
+  if(current >= 1){
+
+    steps[1].classList.add(
+      current === 1
+        ? "active"
+        : "done"
+    );
+
+    steps[2].classList.add(
+      current === 1
+        ? "active"
+        : "done"
+    );
+
+  }
+
+  if(current >= 2){
+
+    steps[3].classList.add("active");
+
+  }
+
 }
 
-function setupCanvas(c){
-  const dpr=devicePixelRatio||1;
-  const r=c.getBoundingClientRect();
-  c.width=r.width*dpr;c.height=r.height*dpr;
-  const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);
-  return [x,r.width,r.height];
+
+function setupCanvas(canvas){
+
+  const rect =
+    canvas.getBoundingClientRect();
+
+  const dpr =
+    window.devicePixelRatio || 1;
+
+  canvas.width =
+    rect.width * dpr;
+
+  canvas.height =
+    rect.height * dpr;
+
+  const ctx =
+    canvas.getContext("2d");
+
+  ctx.setTransform(
+    dpr,
+    0,
+    0,
+    dpr,
+    0,
+    0
+  );
+
+  return {
+    ctx,
+    w:rect.width,
+    h:rect.height
+  };
+
 }
+
 
 function drawOrbit(stage){
-  const [c,w,h]=setupCanvas($('orbitCanvas'));
-  const cx=w*.5,cy=h*.52;
-  const t=(performance.now()-animationStart)/1000;
 
-  c.clearRect(0,0,w,h);
+  const canvas =
+    $("orbitCanvas");
 
-  // Deep-space dynamic starfield
-  for(let i=0;i<120;i++){
-    const x=(i*83.17)%w,y=(i*47.31)%h;
-    const a=.15+.22*Math.sin(t*.6+i);
-    c.fillStyle=`rgba(180,225,255,${a})`;
-    c.fillRect(x,y,1.5,1.5);
+  const {ctx,w,h} =
+    setupCanvas(canvas);
+
+  const t =
+    (performance.now() - animationStart) / 1000;
+
+  ctx.clearRect(
+    0,
+    0,
+    w,
+    h
+  );
+
+
+  /* STAR FIELD */
+
+  for(let i=0;i<90;i++){
+
+    const x =
+      (i * 83.17) % w;
+
+    const y =
+      (i * 47.31) % h;
+
+    const r =
+      0.35 + ((i * 17) % 10) / 14;
+
+    ctx.fillStyle =
+      "rgba(170,220,255,.35)";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      x,
+      y,
+      r,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
   }
 
-  // Gravitational Potential Well
-  const well = c.createRadialGradient(cx,cy,10,cx,cy,280);
-  well.addColorStop(0, 'rgba(85,217,255,0.08)');
-  well.addColorStop(1, 'rgba(0,0,0,0)');
-  c.fillStyle = well;
-  c.beginPath(); c.arc(cx,cy,280,0,Math.PI*2); c.fill();
 
-  // Orbital Rings
-  c.save();
-  c.translate(cx,cy);
-  c.rotate(-.18);
+  const cx = w * .5;
+  const cy = h * .5;
 
-  [72,145,220].forEach((r,i)=>{
-    c.beginPath();
-    c.ellipse(0,0,r,r*.34,0,0,Math.PI*2);
-    c.strokeStyle=`rgba(85,217,255,${.22-i*.04})`;
-    c.setLineDash([4,6]); c.lineWidth=1.2; c.stroke();
-  });
+  /* POTENTIAL WELL */
 
-  // Hidden companion ring
-  c.beginPath();
-  c.ellipse(0,0,270,82,0,0,Math.PI*2);
-  c.strokeStyle='rgba(168,140,255,.15)';
-  c.setLineDash([2,10]); c.stroke();
-  c.restore();
+  const gradient =
+    ctx.createRadialGradient(
+      cx,
+      cy,
+      10,
+      cx,
+      cy,
+      Math.min(w,h)*.48
+    );
 
-  // Primary Star Photosphere Glow
-  const g=c.createRadialGradient(cx,cy,3,cx,cy,72);
-  g.addColorStop(0,'rgba(255,255,255,1)');
-  g.addColorStop(.18,'rgba(255,220,125,.95)');
-  g.addColorStop(.45,'rgba(255,150,50,.35)');
-  g.addColorStop(1,'rgba(255,100,20,0)');
-  c.fillStyle=g;c.beginPath();c.arc(cx,cy,72,0,Math.PI*2);c.fill();
-  c.fillStyle='#ffffff';c.beginPath();c.arc(cx,cy,18,0,Math.PI*2);c.fill();
+  gradient.addColorStop(
+    0,
+    "rgba(85,217,255,.12)"
+  );
 
-  const a1=t*.82;
-  const x1=cx+145*Math.cos(a1),y1=cy+50*Math.sin(a1);
+  gradient.addColorStop(
+    .45,
+    "rgba(85,217,255,.035)"
+  );
 
-  // Planet A Orbital Trail
-  c.beginPath();
-  for(let i=0;i<75;i++){
-    const a=a1-i*.03;
-    const x=cx+145*Math.cos(a),y=cy+50*Math.sin(a);
-    if(i===0)c.moveTo(x,y);else c.lineTo(x,y);
+  gradient.addColorStop(
+    1,
+    "rgba(0,0,0,0)"
+  );
+
+  ctx.fillStyle = gradient;
+
+  ctx.fillRect(
+    0,
+    0,
+    w,
+    h
+  );
+
+
+  /* ORBIT RINGS */
+
+  const orbitA = Math.min(w,h)*.27;
+  const orbitB = Math.min(w,h)*.40;
+
+  ctx.lineWidth = 1;
+
+  ctx.strokeStyle =
+    "rgba(105,190,255,.18)";
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    cx,
+    cy,
+    orbitA,
+    orbitA*.46,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.stroke();
+
+  ctx.strokeStyle =
+    "rgba(168,140,255,.16)";
+
+  ctx.setLineDash([5,8]);
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    cx,
+    cy,
+    orbitB,
+    orbitB*.39,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.stroke();
+
+  ctx.setLineDash([]);
+
+
+  /* STAR */
+
+  const starGlow =
+    ctx.createRadialGradient(
+      cx,
+      cy,
+      4,
+      cx,
+      cy,
+      50
+    );
+
+  starGlow.addColorStop(
+    0,
+    "rgba(255,247,205,1)"
+  );
+
+  starGlow.addColorStop(
+    .12,
+    "rgba(255,232,165,.95)"
+  );
+
+  starGlow.addColorStop(
+    .32,
+    "rgba(255,195,90,.28)"
+  );
+
+  starGlow.addColorStop(
+    1,
+    "rgba(255,180,60,0)"
+  );
+
+  ctx.fillStyle = starGlow;
+
+  ctx.beginPath();
+
+  ctx.arc(
+    cx,
+    cy,
+    48,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.fillStyle =
+    "#fff1b2";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    cx,
+    cy,
+    9,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  /* PLANET A */
+
+  const angle =
+    t * .52;
+
+  const ax =
+    cx + Math.cos(angle) * orbitA;
+
+  const ay =
+    cy + Math.sin(angle) * orbitA*.46;
+
+  ctx.strokeStyle =
+    "rgba(85,217,255,.7)";
+
+  ctx.lineWidth = 1.5;
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    cx,
+    cy
+  );
+
+  ctx.lineTo(
+    ax,
+    ay
+  );
+
+  ctx.stroke();
+
+
+  ctx.shadowBlur = 18;
+  ctx.shadowColor = "#55d9ff";
+
+  ctx.fillStyle =
+    "#55d9ff";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    ax,
+    ay,
+    5,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+
+
+  ctx.fillStyle =
+    "rgba(139,233,255,.8)";
+
+  ctx.font =
+    "10px system-ui";
+
+  ctx.fillText(
+    "PLANET A",
+    ax + 9,
+    ay - 8
+  );
+
+
+  /* HIDDEN COMPANION */
+
+  if(stage === "REVEALED"){
+
+    const hiddenAngle =
+      -t * .28 + 1.4;
+
+    const bx =
+      cx +
+      Math.cos(hiddenAngle) * orbitB;
+
+    const by =
+      cy +
+      Math.sin(hiddenAngle) * orbitB*.39;
+
+    ctx.strokeStyle =
+      "rgba(98,255,176,.5)";
+
+    ctx.setLineDash([3,7]);
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      cx,
+      cy
+    );
+
+    ctx.lineTo(
+      bx,
+      by
+    );
+
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    ctx.shadowBlur = 22;
+    ctx.shadowColor = "#62ffb0";
+
+    ctx.fillStyle =
+      "#62ffb0";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      bx,
+      by,
+      7,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle =
+      "#baffdf";
+
+    ctx.font =
+      "11px system-ui";
+
+    ctx.fillText(
+      "PLANET B · HIDDEN COMPANION",
+      bx + 11,
+      by - 10
+    );
+
   }
-  c.strokeStyle='rgba(85,217,255,.45)';c.lineWidth=2;c.stroke();
 
-  // Planet A Body
-  c.shadowBlur=18;c.shadowColor='#55d9ff';
-  c.fillStyle='#8be9ff';c.beginPath();c.arc(x1,y1,7.5,0,Math.PI*2);c.fill();
-  c.shadowBlur=0;
 
-  // Hidden companion orbital rendering on reveal
-  const revealed=state &&
-    state.hidden_ground_truth &&
-    state.hidden_ground_truth.hidden_companion &&
-    state.hidden_ground_truth.hidden_companion.revealed;
+  /* OBSERVER VECTOR */
 
-  if(revealed){
-    const a2=-t*.31+.8;
-    const x2=cx+270*Math.cos(a2),y2=cy+82*Math.sin(a2);
+  ctx.strokeStyle =
+    "rgba(255,199,102,.55)";
 
-    // Perturbation Vector
-    c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2);
-    c.strokeStyle='rgba(168,140,255,0.22)'; c.setLineDash([2,4]); c.stroke();
-    c.setLineDash([]);
+  ctx.setLineDash([4,6]);
 
-    c.beginPath();
-    for(let i=0;i<55;i++){
-      const a=a2-i*.025;
-      const x=cx+270*Math.cos(a),y=cy+82*Math.sin(a);
-      if(i===0)c.moveTo(x,y);else c.lineTo(x,y);
-    }
-    c.strokeStyle='rgba(168,140,255,.45)';c.lineWidth=2;c.stroke();
+  ctx.beginPath();
 
-    c.shadowBlur=22;c.shadowColor='#a88cff';
-    c.fillStyle='#d8ccff';c.beginPath();c.arc(x2,y2,9.5,0,Math.PI*2);c.fill();
-    c.shadowBlur=0;
+  ctx.moveTo(
+    18,
+    h - 24
+  );
 
-    c.fillStyle='#cfc2ff';c.font='10px system-ui';
-    c.fillText('HIDDEN COMPANION',x2+15,y2-10);
-  }
+  ctx.lineTo(
+    cx - 20,
+    cy + 10
+  );
 
-  // Observer Vector Graphic
-  c.save();
-  c.translate(w-80,65);
-  c.strokeStyle='rgba(98,255,176,.7)';c.lineWidth=1.5;
-  c.beginPath();c.moveTo(0,30);c.lineTo(0,-18);c.stroke();
-  c.beginPath();c.moveTo(-5,-10);c.lineTo(0,-18);c.lineTo(5,-10);c.stroke();
-  c.fillStyle='#62ffb0';c.font='9px system-ui';c.fillText('OBSERVER',-27,45);
-  c.restore();
+  ctx.stroke();
 
-  c.fillStyle='#7894ac';c.font='9px system-ui';
-  c.fillText('STAR / HOST',cx-31,cy+44);
-  c.fillStyle='#8be9ff';c.fillText('PLANET A',x1+12,y1+3);
+  ctx.setLineDash([]);
 
-  requestAnimationFrame(()=>drawOrbit(stage));
+  ctx.fillStyle =
+    "rgba(255,199,102,.7)";
+
+  ctx.font =
+    "9px system-ui";
+
+  ctx.fillText(
+    "OBSERVER",
+    18,
+    h - 10
+  );
+
+
+  requestAnimationFrame(
+    () => drawOrbit(state?.stage || "OBSERVED")
+  );
+
 }
+
 
 function drawLightCurve(){
-  const [c,w,h]=setupCanvas($('lightCanvas'));
-  c.clearRect(0,0,w,h);
 
-  c.strokeStyle='rgba(105,190,255,.09)';
-  c.lineWidth=1;
-  for(let i=0;i<6;i++){
-    const y=15+i*(h-30)/5;
-    c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();
+  const canvas =
+    $("lightCanvas");
+
+  const {ctx,w,h} =
+    setupCanvas(canvas);
+
+  ctx.clearRect(
+    0,
+    0,
+    w,
+    h
+  );
+
+
+  const pad = {
+    l:42,
+    r:18,
+    t:22,
+    b:32
+  };
+
+  const pw =
+    w - pad.l - pad.r;
+
+  const ph =
+    h - pad.t - pad.b;
+
+
+  /* GRID */
+
+  ctx.strokeStyle =
+    "rgba(105,190,255,.1)";
+
+  ctx.lineWidth = 1;
+
+  for(let i=0;i<=5;i++){
+
+    const y =
+      pad.t + ph*i/5;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      pad.l,
+      y
+    );
+
+    ctx.lineTo(
+      w-pad.r,
+      y
+    );
+
+    ctx.stroke();
+
   }
 
-  const obs=state && state.observation;
-  let values=obs && (obs.flux||obs.values||obs.normalized_flux);
 
-  if(!Array.isArray(values)){
-    values=[];
-    const n=260;
-    for(let i=0;i<n;i++){
-      const x=i/n;
-      let y=1+Math.sin(i*.17)*.0012;
-      for(const center of [.25,.50,.75]){
-        const d=Math.abs(x-center);
-        if(d<.028)y-=.010*Math.cos(d/.028*Math.PI/2)**2;
-      }
-      values.push(y);
+  /* LABELS */
+
+  ctx.fillStyle =
+    "rgba(113,135,156,.8)";
+
+  ctx.font =
+    "9px system-ui";
+
+  ctx.fillText(
+    "NORMALIZED FLUX",
+    10,
+    15
+  );
+
+  ctx.fillText(
+    "TIME",
+    w-48,
+    h-9
+  );
+
+
+  const observations =
+    state?.observation?.flux;
+
+
+  const n =
+    observations?.length || 900;
+
+
+  ctx.beginPath();
+
+  for(let i=0;i<n;i++){
+
+    const x =
+      pad.l + pw*i/(n-1);
+
+    let value;
+
+    if(observations){
+
+      value =
+        Number(observations[i]);
+
+    }else{
+
+      const phase =
+        (i/n)*13;
+
+      const local =
+        phase % 1;
+
+      value =
+        1 -
+        (
+          Math.abs(local-.5) < .055
+            ? .012 * (
+                1 -
+                Math.abs(local-.5)/.055
+              )
+            : 0
+        );
+
+      value +=
+        Math.sin(i*.17)*.0007 +
+        Math.sin(i*.031)*.0005;
+
     }
+
+
+    const normalized =
+      Math.max(
+        0.985,
+        Math.min(
+          1.005,
+          value
+        )
+      );
+
+    const y =
+      pad.t +
+      (1.005-normalized) /
+      (.020) *
+      ph;
+
+    if(i===0)
+      ctx.moveTo(x,y);
+    else
+      ctx.lineTo(x,y);
+
   }
 
-  const min=Math.min(...values),max=Math.max(...values);
-  const range=(max-min)||.01;
+  ctx.strokeStyle =
+    "#8be9ff";
 
-  c.beginPath();
-  values.forEach((v,i)=>{
-    const x=i/(values.length-1)*w;
-    const y=15+(max-v)/range*(h-30);
-    if(i===0)c.moveTo(x,y);else c.lineTo(x,y);
-  });
-  c.strokeStyle='#55d9ff';c.lineWidth=1.8;c.shadowBlur=12;c.shadowColor='rgba(85,217,255,.65)';
-  c.stroke();c.shadowBlur=0;
+  ctx.lineWidth = 1.35;
 
-  c.fillStyle='#6b859e';c.font='8px system-ui';
-  c.fillText('NORMALIZED FLUX',8,12);
-  c.fillText('TIME →',w-42,h-7);
+  ctx.shadowBlur = 7;
+  ctx.shadowColor =
+    "rgba(85,217,255,.45)";
+
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+
 }
+
 
 function drawTTV(t){
-  const [c,w,h]=setupCanvas($('ttvCanvas'));
-  c.clearRect(0,0,w,h);
 
-  const vals=t.oc_residuals_seconds||[];
-  c.strokeStyle='rgba(105,190,255,.09)';
-  for(let i=0;i<5;i++){
-    const y=12+i*(h-30)/4;
-    c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();
+  const canvas =
+    $("ttvCanvas");
+
+  const {ctx,w,h} =
+    setupCanvas(canvas);
+
+  ctx.clearRect(
+    0,
+    0,
+    w,
+    h
+  );
+
+
+  const pad = {
+    l:45,
+    r:22,
+    t:22,
+    b:32
+  };
+
+  const pw =
+    w-pad.l-pad.r;
+
+  const ph =
+    h-pad.t-pad.b;
+
+
+  ctx.strokeStyle =
+    "rgba(105,190,255,.1)";
+
+  ctx.lineWidth=1;
+
+  for(let i=0;i<=4;i++){
+
+    const y =
+      pad.t + ph*i/4;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      pad.l,
+      y
+    );
+
+    ctx.lineTo(
+      w-pad.r,
+      y
+    );
+
+    ctx.stroke();
+
   }
 
-  c.strokeStyle='rgba(255,255,255,.18)';
-  c.beginPath();c.moveTo(0,h/2);c.lineTo(w,h/2);c.stroke();
 
-  if(!vals.length){
-    c.fillStyle='#5c7488';c.font='10px system-ui';
-    c.fillText('AWAITING TRANSIT TIMINGS',18,h/2);
+  const residuals =
+    state?.ttv?.residuals_seconds ||
+    state?.inference?.ttv_residuals_seconds;
+
+
+  if(!residuals){
+
+    ctx.fillStyle =
+      "rgba(113,135,156,.65)";
+
+    ctx.font =
+      "11px system-ui";
+
+    ctx.textAlign =
+      "center";
+
+    ctx.fillText(
+      "AWAITING INFERENCE",
+      w/2,
+      h/2
+    );
+
+    ctx.textAlign =
+      "left";
+
     return;
+
   }
 
-  const max=Math.max(10,...vals.map(v=>Math.abs(v)));
-  c.beginPath();
-  vals.forEach((v,i)=>{
-    const x=24+(i/(Math.max(1,vals.length-1)))*(w-48);
-    const y=h/2-(v/max)*(h*.37);
-    if(i===0)c.moveTo(x,y);else c.lineTo(x,y);
-  });
-  c.strokeStyle='#a88cff';c.lineWidth=2.2;c.shadowBlur=12;c.shadowColor='rgba(168,140,255,.6)';
-  c.stroke();c.shadowBlur=0;
 
-  vals.forEach((v,i)=>{
-    const x=24+(i/(Math.max(1,vals.length-1)))*(w-48);
-    const y=h/2-(v/max)*(h*.37);
-    c.fillStyle='#e3dbff';c.beginPath();c.arc(x,y,3.5,0,Math.PI*2);c.fill();
-  });
+  const maxAbs =
+    Math.max(
+      1,
+      ...residuals.map(
+        x => Math.abs(Number(x))
+      )
+    );
 
-  c.fillStyle='#7894ac';c.font='8px system-ui';
-  c.fillText('0 s',5,h/2+3);
-  c.fillText('O-C RESIDUAL',8,10);
+
+  ctx.strokeStyle =
+    "rgba(105,190,255,.18)";
+
+  ctx.beginPath();
+
+  const zeroY =
+    pad.t + ph/2;
+
+  ctx.moveTo(
+    pad.l,
+    zeroY
+  );
+
+  ctx.lineTo(
+    w-pad.r,
+    zeroY
+  );
+
+  ctx.stroke();
+
+
+  ctx.beginPath();
+
+  residuals.forEach(
+    (value,i) => {
+
+      const x =
+        pad.l +
+        pw*i/
+        Math.max(
+          1,
+          residuals.length-1
+        );
+
+      const y =
+        zeroY -
+        Number(value)/maxAbs *
+        (ph*.42);
+
+      if(i===0)
+        ctx.moveTo(x,y);
+      else
+        ctx.lineTo(x,y);
+
+    }
+  );
+
+  ctx.strokeStyle =
+    "#a88cff";
+
+  ctx.lineWidth=1.5;
+
+  ctx.shadowBlur=8;
+
+  ctx.shadowColor =
+    "rgba(168,140,255,.5)";
+
+  ctx.stroke();
+
+  ctx.shadowBlur=0;
+
+
+  residuals.forEach(
+    (value,i) => {
+
+      const x =
+        pad.l +
+        pw*i/
+        Math.max(
+          1,
+          residuals.length-1
+        );
+
+      const y =
+        zeroY -
+        Number(value)/maxAbs *
+        (ph*.42);
+
+      ctx.fillStyle =
+        "#c9bcff";
+
+      ctx.beginPath();
+
+      ctx.arc(
+        x,
+        y,
+        2.4,
+        0,
+        Math.PI*2
+      );
+
+      ctx.fill();
+
+    }
+  );
+
 }
 
-window.addEventListener('resize',()=>{render()});
+
+window.addEventListener(
+  "resize",
+  () => {
+    if(state){
+      drawLightCurve();
+      drawTTV(performance.now());
+    }
+  }
+);
+
+
+/* Keep orbit animation alive */
+
+function animateOrbit(){
+
+  drawOrbit(
+    state?.stage || "OBSERVED"
+  );
+
+}
+
+animateOrbit();
+
+
+/* Poll backend state */
+
 loadState();
-setInterval(loadState,3000);
+
+setInterval(
+  loadState,
+  3000
+);
+
 </script>
 
-<div id="missionControls"
-     style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
-            z-index:9999;display:flex;align-items:center;gap:12px;
-            padding:14px 16px;background:rgba(5,14,26,.96);
-            border:1px solid rgba(61,201,255,.55);border-radius:18px;
-            box-shadow:0 0 35px rgba(40,190,255,.16);
-            backdrop-filter:blur(14px);">
 
-  <span style="font:600 10px Arial,sans-serif;letter-spacing:2px;
-               color:#5fdcff;padding:0 8px;">
-    MISSION CONTROL
-  </span>
+<!-- MISSION CONTROL -->
 
-  <button type="button"
-          onclick="missionAction('/api/reset')"
-          style="cursor:pointer;border:1px solid rgba(130,170,200,.35);
-                 background:#091522;color:#b9c9d8;padding:11px 16px;
-                 border-radius:10px;font:600 11px Arial,sans-serif;
-                 letter-spacing:1.4px;">
+<div id="missionControls">
+
+  <button
+    onclick="missionAction('/api/reset')"
+  >
     RESET
   </button>
 
-  <button type="button"
-          onclick="missionAction('/api/infer')"
-          style="cursor:pointer;border:1px solid #55d8ff;
-                 background:linear-gradient(180deg,#16384b,#0b1b27);
-                 color:#eafaff;padding:12px 22px;border-radius:10px;
-                 font:700 11px Arial,sans-serif;letter-spacing:1.6px;
-                 box-shadow:0 0 18px rgba(60,210,255,.22);">
+  <button
+    onclick="missionAction('/api/infer')"
+  >
     RUN INFERENCE
   </button>
 
-  <button type="button"
-          onclick="missionAction('/api/reveal')"
-          style="cursor:pointer;border:1px solid rgba(86,240,176,.55);
-                 background:#0b211c;color:#a9ffd8;padding:11px 16px;
-                 border-radius:10px;font:600 11px Arial,sans-serif;
-                 letter-spacing:1.2px;">
+  <button
+    onclick="missionAction('/api/reveal')"
+  >
     REVEAL DATA
   </button>
 
-  <span id="missionFeedback"
-        style="min-width:130px;padding-left:8px;
-               font:600 10px Arial,sans-serif;letter-spacing:1.2px;
-               color:#8da7b7;">
+  <div id="missionStatus">
     STATUS // READY
-  </span>
+  </div>
+
 </div>
 
+
 <script>
-async function missionAction(url) {
-    const m = document.getElementById("missionFeedback");
 
-    try {
-        m.textContent = "STATUS // PROCESSING";
-        m.style.color = "#5fdcff";
+async function missionAction(url){
 
-        const response = await fetch(url, {method: "POST"});
+  const status =
+    document.getElementById(
+      "missionStatus"
+    );
 
-        if (!response.ok) {
-            throw new Error("HTTP " + response.status);
+  status.textContent =
+    "PROCESSING...";
+
+
+  try{
+
+    const response =
+      await fetch(
+        url,
+        {
+          method:"POST"
         }
+      );
 
-        const data = await response.json();
-
-        m.textContent = "STATUS // " + (data.stage || "UPDATED");
-        m.style.color = "#7dffbf";
-
-        setTimeout(function () {
-            window.location.reload();
-        }, 700);
-
-    } catch (error) {
-        m.textContent = "STATUS // LINK FAILURE";
-        m.style.color = "#ff718b";
-        console.error(error);
-        alert("Mission request failed: " + error.message);
+    if(!response.ok){
+      throw new Error(
+        "Mission action failed"
+      );
     }
+
+    status.textContent =
+      "ACTION COMPLETE";
+
+    setTimeout(
+      () => location.reload(),
+      700
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    status.textContent =
+      "ACTION FAILED";
+
+  }
+
 }
+
 </script>
-</body></html>
+
+</body>
+</html>
+
+
+
