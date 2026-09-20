@@ -1,588 +1,338 @@
-# TESS: THE HIDDEN ARCHITECT
+# TESS Hidden Architect
 
-> **A TESS-inspired exoplanet simulation where you infer a hidden planetary companion from noisy transit-timing variations.**
+### Infer the planet you cannot see.
 
----
+**TESS Hidden Architect** is a TESS-inspired exoplanet simulation that turns planetary detection into a scientific investigation.
 
-## Overview
+A transiting planet appears to follow an apparently regular orbit. But its transit times contain subtle deviations.
 
-**TESS Hidden Architect** turns exoplanet detection into an investigation.
+Those deviations can be the gravitational fingerprint of another planet.
 
-You begin with observations of a transiting planet whose light curve looks deceptively regular. The simulation deliberately withholds the hidden companion, so its existence cannot simply be read from the visualization. Instead, you must examine and figure out the hidden celestial body.
-
-The simulation combines a physically motivated orbital system, numerical N-body dynamics, synthetic observations, transit detection, inference, and a final reveal. After a prediction is made, withheld information exposes the hidden companion and allows the inferred timing structure to be compared with the underlying system.
-
-The goal is to capture the scientific reasoning behind exoplanet discovery: the most interesting worlds may not be directly visible, but their gravitational influence can leave measurable fingerprints in the data.
+The hidden companion is deliberately withheld from the initial observation. Instead of simply being shown the answer, the user must investigate the observations, infer the presence of an unseen body, make a prediction, and finally compare that prediction with the underlying simulated system.
 
 ---
 
-# Scientific Agenda
-
-The central scientific idea is:
-
-> **A celestial body does not always need to be directly observed for its gravitational influence to be measurable.**
-
-A transiting planet can act as an observational probe of another planet.
-
-If a second planet gravitationally perturbs the orbit of the observed planet, the times at which the observed planet crosses the stellar disk can shift slightly.
-
-These changes are known as **Transit Timing Variations (TTVs)**.
-
-The simulation turns this principle into an interactive investigation:
+## The Core Idea
 
 ```text
 OBSERVE → INFER → PREDICT → REVEAL
 ```
 
-The user initially sees the consequences of the planetary system rather than the complete system itself.
+The simulation demonstrates a fundamental idea in astronomy:
+
+> **A planet does not always have to be directly observed to leave evidence of its existence.**
+
+A hidden companion gravitationally perturbs the orbit of an observable transiting planet.
+
+That perturbation changes the timing of its transits.
+
+The timing changes become an observable signal known as a **Transit Timing Variation (TTV)**.
+
+The investigation therefore follows:
+
+```text
+Hidden Planet
+     ↓
+Gravitational Perturbation
+     ↓
+Observed Planet's Orbital Motion Changes
+     ↓
+Transit Times Shift
+     ↓
+TTV Signal
+     ↓
+Inference
+     ↓
+Prediction
+     ↓
+Reveal & Validation
+```
 
 ---
 
-# Scientific Workflow
+# What You Do
 
-The simulation separates four important layers:
+You are not given the complete planetary system at the beginning.
 
-### 1. Physical system
+Instead, you:
 
-The underlying planetary system contains the star, the observed transiting planet, and a hidden companion.
+### 1. OBSERVE
 
-### 2. Observation
+Examine the available observations of the transiting planet.
 
-The physical state is converted into observable quantities such as projected positions, transit events, transit times, and stellar brightness changes.
+The hidden companion is intentionally withheld.
 
-### 3. Inference
+### 2. INFER
 
-The observer uses the available timing information to investigate the possibility of a hidden gravitational companion.
+Investigate the transit timing behaviour and look for evidence that the observed planet is being gravitationally perturbed.
 
-### 4. Validation
+### 3. PREDICT
 
-The hidden system is eventually revealed, allowing the inferred properties and timing behaviour to be compared with the underlying simulated system.
+Use the inferred timing structure to form a prediction about the hidden system.
 
-This separation is important because the simulation is intended to demonstrate **scientific inference**, rather than simply displaying an already-known answer.
+### 4. REVEAL
+
+The hidden companion is finally exposed.
+
+The inferred behaviour can then be compared against the underlying simulated system.
+
+This separation between **observation, inference, and ground truth** is central to the project.
 
 ---
 
-# Physics & Mathematical Model
+# Why This Matters
 
-## 1. Newtonian Gravitational Dynamics
+Exoplanet discovery is not always about directly seeing a planet.
+
+Astronomers frequently infer the existence and properties of astronomical objects from their effects on other observable systems.
+
+TESS Hidden Architect uses this idea to demonstrate how:
+
+**an invisible cause can produce a measurable consequence.**
+
+The project therefore focuses not only on orbital simulation, but on the reasoning process that connects:
+
+**physics → observation → signal → inference → validation.**
+
+---
+
+# Scientific Foundations
+
+## 1. Newtonian Gravity
 
 The planetary system is evolved using Newtonian gravitational interactions.
 
-The force between two bodies is:
+For two bodies \(i\) and \(j\):
 
-$$
-\mathbf{F}_{ij}
-=
-G
-\frac{m_i m_j}
-{|\mathbf{r}_j-\mathbf{r}_i|^3}
-(\mathbf{r}_j-\mathbf{r}_i)
-$$
+`F_ij = G m_i m_j (r_j - r_i) / |r_j - r_i|^3`
 
 where:
 
-* \(G\) is the gravitational constant
-* \(m_i,m_j\) are the masses of the interacting bodies
-* \(\mathbf r_i,\mathbf r_j\) are their position vectors
+* `G` = gravitational constant
+* `m_i`, `m_j` = masses of the bodies
+* `r_i`, `r_j` = position vectors
 
-The acceleration of body \(i\) is therefore:
+The acceleration of body `i` is:
 
-$$
-\mathbf{a}_i
-=
-G
-\sum_{j\ne i}
-m_j
-\frac{\mathbf r_j-\mathbf r_i}
-{|\mathbf r_j-\mathbf r_i|^3}
-$$
+`a_i = G Σ[j ≠ i] m_j (r_j - r_i) / |r_j - r_i|^3`
 
-This interaction is what allows the hidden companion to gravitationally perturb the observed planet.
+This gravitational interaction is what allows the hidden companion to influence the observable planet.
 
 ---
 
 ## 2. Equations of Motion
 
-The numerical evolution follows:
+The numerical system evolves according to:
 
-$$
-\frac{d\mathbf r_i}{dt}
-=
-\mathbf v_i
-$$
+`dr_i/dt = v_i`
 
 and:
 
-$$
-\frac{d\mathbf v_i}{dt}
-=
-\mathbf a_i
-$$
+`dv_i/dt = a_i`
 
-or equivalently:
+or:
 
-$$
-\frac{d^2\mathbf r_i}{dt^2}
-=
-G
-\sum_{j\ne i}
-m_j
-\frac{\mathbf r_j-\mathbf r_i}
-{|\mathbf r_j-\mathbf r_i|^3}
-$$
+`d²r_i/dt² = a_i`
 
-These equations are numerically integrated to evolve the system through time.
+The resulting motion is numerically integrated to evolve the planetary system through time.
 
 ---
 
-# 3. Keplerian Orbital Period
+## 3. Keplerian Orbital Period
 
-For a planet orbiting a dominant stellar mass, the characteristic orbital period is:
+For a planet orbiting a dominant stellar mass:
 
-$$
-P
-=
-2\pi
-\sqrt{
-\frac{a^3}
-{G(M_\star+m)}
-}
-$$
+`P = 2π √(a³ / [G(M_star + m)])`
 
-For \(m\ll M_\star\):
+For a planet whose mass is much smaller than its host star:
 
-$$
-P
-\approx
-2\pi
-\sqrt{
-\frac{a^3}{GM_\star}
-}
-$$
+`P ≈ 2π √(a³ / GM_star)`
 
 where:
 
-* \(P\) = orbital period
-* \(a\) = semi-major axis
-* \(M_\star\) = stellar mass
-* \(m\) = planetary mass
+* `P` = orbital period
+* `a` = semi-major axis
+* `M_star` = stellar mass
+* `m` = planetary mass
 
 This provides the characteristic orbital timescale of the system.
 
 ---
 
-# 4. Eccentric Orbital Geometry
+## 4. Eccentric Orbital Geometry
 
-For an orbit with eccentricity \(e\), the instantaneous distance from the focus is:
+For an orbit with eccentricity `e`:
 
-$$
-r
-=
-\frac{a(1-e^2)}
-{1+e\cos\nu}
-$$
+`r = a(1 - e²) / (1 + e cos ν)`
 
 where:
 
-* \(a\) = semi-major axis
-* \(e\) = eccentricity
-* \(\nu\) = true anomaly
+* `a` = semi-major axis
+* `e` = eccentricity
+* `ν` = true anomaly
 
-The position in the orbital plane can then be represented as:
+The orbital-plane position is represented by:
 
-$$
-\mathbf r_{\mathrm{peri}}
-=
-\begin{bmatrix}
-r\cos\nu\\
-r\sin\nu\\
-0
-\end{bmatrix}
-$$
+`r_peri = [r cos ν, r sin ν, 0]`
 
 ---
 
-# 5. Orbital-Element Coordinate Transformation
+## 5. Orbital Coordinate Transformation
 
-The orbital-plane position is transformed into the inertial reference frame using the standard orbital rotations:
+The orbital-plane coordinates are transformed into the inertial reference frame using the standard orbital rotations:
 
-$$
-\mathbf r
-=
-R_z(\Omega)
-R_x(i)
-R_z(\omega)
-\mathbf r_{\mathrm{peri}}
-$$
+`r = R_z(Ω) R_x(i) R_z(ω) r_peri`
 
 where:
 
-* \(i\) = inclination
-* \(\Omega\) = longitude of ascending node
-* \(\omega\) = argument of periapsis
+* `i` = orbital inclination
+* `Ω` = longitude of ascending node
+* `ω` = argument of periapsis
 
-The rotation about the \(z\)-axis is:
+The implementation uses the conventional astronomical inclination:
 
-$$
-R_z(\theta)
-=
-\begin{bmatrix}
-\cos\theta&-\sin\theta&0\\
-\sin\theta&\cos\theta&0\\
-0&0&1
-\end{bmatrix}
-$$
+```text
+i = 0°    → face-on
+i = 90°   → edge-on
+```
 
-The rotation about the \(x\)-axis is:
-
-$$
-R_x(\theta)
-=
-\begin{bmatrix}
-1&0&0\\
-0&\cos\theta&-\sin\theta\\
-0&\sin\theta&\cos\theta
-\end{bmatrix}
-$$
-
-### Inclination convention
-
-The implementation follows the conventional astronomical definition:
-
-$$
-i=0^\circ
-\quad\Rightarrow\quad
-\text{face-on}
-$$
-
-$$
-i=90^\circ
-\quad\Rightarrow\quad
-\text{edge-on}
-$$
-
-An approximately edge-on orbit is required for a planetary transit to be observable from the chosen viewing geometry.
+This convention is important because an approximately edge-on orbit is required for a transit to be observable from the chosen viewing geometry.
 
 ---
 
-# 6. Observer-Plane Projection
+# Transit Detection
 
-The observer looks along the selected line of sight.
+The observer sees the planetary system projected onto the plane of the sky.
 
-For the implemented observer geometry, the position is projected onto the plane of the sky.
+For the implemented observer geometry:
 
-The projected coordinates are:
+`x_sky = x`
 
-$$
-x_{\mathrm{sky}}=x
-$$
+`y_sky = y`
 
-$$
-y_{\mathrm{sky}}=y
-$$
+The projected separation between the planet and star is:
 
-The projected planet-star separation is:
+`d_sky = √(x² + y²)`
 
-$$
-d_{\mathrm{sky}}
-=
-\sqrt{
-x_{\mathrm{sky}}^2+y_{\mathrm{sky}}^2
-}
-$$
+A transit is identified when:
 
-or:
-
-$$
-d_{\mathrm{sky}}
-=
-\sqrt{x^2+y^2}
-$$
-
----
-
-# 7. Transit Detection
-
-A transit occurs when the projected planetary position passes across the stellar disk.
-
-The geometric transit condition is:
-
-$$
-d_{\mathrm{sky}}
-\le
-R_\star+R_p
-$$
+`d_sky ≤ R_star + R_planet`
 
 where:
 
-* \(R_\star\) = stellar radius
-* \(R_p\) = planetary radius
+* `R_star` = stellar radius
+* `R_planet` = planetary radius
 
-The simulation uses the projected separation to identify transit events.
+Thus, transit detection is based on orbital geometry rather than simply displaying a planet visually near the star.
 
 ---
 
-# 8. Transit Times
+# Transit Timing
 
-The simulation records the times at which transit events occur:
+The simulation records the times of transit events:
 
-$$
-T_1,T_2,T_3,\ldots,T_N
-$$
+`T_1, T_2, T_3, ... , T_N`
 
-For an approximately periodic planet, a reference linear ephemeris can be represented by:
+For an approximately periodic planet, a reference ephemeris can be represented as:
 
-$$
-T_{\mathrm{calc}}(n)
-=
-T_0+nP
-$$
+`T_calc(n) = T_0 + nP`
 
 where:
 
-* \(T_0\) = reference transit time
-* \(P\) = reference orbital period
-* \(n\) = transit number
+* `T_0` = reference transit time
+* `P` = reference orbital period
+* `n` = transit number
+
+The difference between an observed and calculated transit time is:
+
+`ΔT_n = T_obs,n - T_calc,n`
+
+These deviations form the basis of the TTV signal.
 
 ---
 
-# 9. Transit Timing Variations
+# Transit Timing Variations
 
-The difference between the observed and calculated transit time is:
+**Transit Timing Variations (TTVs)** are deviations in the measured transit times from a reference periodic prediction.
 
-$$
-\Delta T_n
-=
-T_{\mathrm{obs},n}
--
-T_{\mathrm{calc},n}
-$$
+In an idealized isolated periodic orbit, transit times follow the reference ephemeris closely.
 
-These deviations are the **Transit Timing Variations (TTVs)**.
-
-For an ideal isolated periodic orbit, the timing sequence would remain close to the reference ephemeris.
-
-When another planet gravitationally perturbs the orbit, the timing can deviate from this simple model.
+When another planet gravitationally perturbs the orbit, the transit times can shift.
 
 The resulting sequence:
 
-$$
-\Delta T_1,\Delta T_2,\ldots,\Delta T_N
-$$
+```text
+ΔT_1, ΔT_2, ΔT_3, ... , ΔT_N
+```
 
-contains information about the perturbing dynamics.
+contains information about the underlying gravitational dynamics.
 
----
-
-# 10. O-C Timing Residual
-
-The same timing difference can be described as an **Observed minus Calculated (O-C)** residual:
-
-$$
-O-C
-=
-T_{\mathrm{obs}}
--
-T_{\mathrm{calc}}
-$$
-
-The O-C representation is useful for identifying structured departures from a simple periodic timing model.
-
-In the context of this simulation, the timing deviations provide the observational fingerprint used during the inference stage.
+This is the key observational fingerprint used by the simulation.
 
 ---
 
-# 11. RMS Timing Residual
+# O-C Residuals
 
-A sequence of timing deviations can be summarized by its root-mean-square value:
+The timing deviation can also be expressed as an **Observed minus Calculated (O-C)** value:
 
-$$
-\mathrm{RMS}
-=
-\sqrt{
-\frac{1}{N}
-\sum_{n=1}^{N}
-(\Delta T_n)^2
-}
-$$
+`O-C = T_obs - T_calc`
 
-This gives a measure of the overall scale of the timing deviations.
+An O-C sequence makes departures from a simple periodic ephemeris easier to inspect.
+
+The important scientific point is not merely that the timing changes, but that the changes can contain **structure produced by gravitational interactions**.
 
 ---
 
-# 12. Transit Photometry
+# Transit Photometry
 
-A planetary transit causes a reduction in observed stellar flux.
+A planetary transit causes the observed stellar flux to decrease.
 
 The normalized flux is:
 
-$$
-F_{\mathrm{norm}}
-=
-\frac{F(t)}{F_0}
-$$
+`F_norm = F(t) / F_0`
 
 where:
 
-* \(F(t)\) = stellar flux at time \(t\)
-* \(F_0\) = reference out-of-transit flux
+* `F(t)` = observed stellar flux
+* `F_0` = reference out-of-transit flux
 
 During a transit:
 
-$$
-F_{\mathrm{norm}}<1
-$$
-
----
-
-# 13. Approximate Transit Depth
+`F_norm < 1`
 
 For a simplified uniform stellar disk, the approximate fractional transit depth is:
 
-$$
-\delta
-\approx
-\left(
-\frac{R_p}{R_\star}
-\right)^2
-$$
+`δ ≈ (R_planet / R_star)²`
 
-where:
-
-* \(\delta\) = fractional transit depth
-* \(R_p\) = planetary radius
-* \(R_\star\) = stellar radius
-
-This illustrates why a larger planet produces a deeper photometric signal.
-
-This relationship is included as the physical interpretation of transit photometry; the simulation's primary hidden-companion signal is the **timing behaviour**, not precision stellar photometry.
+The project uses transit photometry as part of the observational picture, while the hidden-companion investigation focuses primarily on timing behaviour.
 
 ---
 
-# 14. The Hidden Companion Mechanism
+# The Planetary System
 
-The central physical chain of the simulation is:
+The demonstration system contains two planets around a host star.
 
-$$
-\boxed{
-\text{Planet B}
-\rightarrow
-\text{Gravitational Perturbation}
-\rightarrow
-\text{Planet A Orbital Perturbation}
-\rightarrow
-\text{Transit-Time Shift}
-\rightarrow
-\text{TTV Signal}
-}
-$$
-
-Planet B does not need to produce an obvious transit itself in order to influence the timing of Planet A.
-
-This is the fundamental physical idea behind the **Hidden Architect**.
-
----
-
-# Inference Concept
-
-The simulation demonstrates the following reasoning process:
-
-```text
-Measured transit times
-        ↓
-Reference timing model
-        ↓
-Timing deviations
-        ↓
-Structured TTV signal
-        ↓
-Hypothesis: additional gravitational body
-        ↓
-Estimate / prediction
-        ↓
-Reveal
-        ↓
-Compare prediction with simulated truth
-```
-
-The hidden companion is therefore treated as an **inference problem** rather than a directly displayed object.
-
----
-
-# Planetary System
-
-The demonstration system contains:
-
-### Planet A — Observed Planet
+## Planet A — Observable Planet
 
 Planet A is the transiting planet.
 
-Its repeated transits provide the observable timing sequence used by the investigator.
+Its repeated transits provide the observable timing sequence.
 
-### Planet B — Hidden Companion
+The investigator does not initially receive direct information about the complete planetary system.
+
+## Planet B — Hidden Companion
 
 Planet B is initially withheld from the observational presentation.
 
-Its gravitational interaction with Planet A modifies Planet A's orbital motion and therefore contributes to the observed timing structure.
+Its gravitational influence perturbs Planet A.
 
-After inference, Planet B is revealed as the underlying source of the perturbation.
+That perturbation can produce changes in Planet A's transit timing.
 
----
-
-# Reveal & Validation
-
-The final reveal serves as a validation checkpoint.
-
-The hidden companion is exposed only after the investigator has worked through the observational/inference stage.
-
-This creates a distinction between:
-
-**inference**
-
-and
-
-**ground truth**.
-
-The reveal allows the user to visually connect the inferred gravitational structure with the underlying simulated planetary system.
-
----
-
-# Scientific Accuracy Principles
-
-The project follows several principles intended to keep the simulation scientifically grounded.
-
-### Correct orbital inclination
-
-The simulation uses:
-
-* \(0^\circ\) = face-on
-* \(90^\circ\) = edge-on
-
-rather than reversing the conventional astronomical definition.
-
-### Physical transit geometry
-
-Transit detection is based on projected planet-star separation rather than simply placing a planet visually near the star.
-
-### Numerical dynamics
-
-The underlying planetary motion is generated from gravitational dynamics rather than being solely a pre-scripted visual animation.
-
-### Observation is separated from truth
-
-The hidden companion is not exposed to the observer at the beginning.
-
-The observable signal is generated first, and the underlying system is revealed later.
-
-### Visualization is a presentation layer
-
-The cinematic frontend is used to communicate the physical experiment. The visualization should not be interpreted as a replacement for the underlying dynamical calculations.
+The hidden planet is revealed only during the final validation stage.
 
 ---
 
 # Simulation Architecture
-
-The conceptual architecture is:
 
 ```text
                  PHYSICAL SYSTEM
@@ -599,205 +349,334 @@ The conceptual architecture is:
                        ▼
               Observer Projection
                        │
-             ┌─────────┴─────────┐
-             ▼                   ▼
-      Transit Detection     Visualization
-             │
-             ▼
-        Transit Times
-             │
-             ▼
-       Timing Analysis
-             │
-             ▼
+              ┌────────┴────────┐
+              ▼                 ▼
+       Transit Detection    Visualization
+              │
+              ▼
+         Transit Times
+              │
+              ▼
+        Timing Analysis
+              │
+              ▼
       Hidden Companion
-         Inference
-             │
-             ▼
+          Inference
+              │
+              ▼
           Prediction
-             │
-             ▼
-           REVEAL
-             │
-             ▼
-      Validation / Comparison
+              │
+              ▼
+            REVEAL
+              │
+              ▼
+       Validation / Comparison
 ```
 
 ---
 
-# Mission Flow
+# Software Structure
 
-The interactive mission is structured around four stages:
+The repository separates the major components of the simulation:
 
-## OBSERVE
+```text
+src/
+└── tess_hidden_architect/
+    ├── physics/
+    │   ├── orbital dynamics
+    │   ├── coordinates
+    │   └── gravitational system
+    │
+    ├── observation/
+    │   ├── transit detection
+    │   └── synthetic observations
+    │
+    └── app/
+        └── interactive mission interface
+```
 
-The user examines the available stellar/transit observations.
+The exact implementation is contained in the source tree of this repository.
 
-The hidden companion is not directly disclosed.
+---
 
-## INFER
+# Mission Design
 
-The user analyses the timing behaviour and investigates the possibility of a perturbing body.
+The project deliberately separates:
 
-## PREDICT
+### Physical truth
 
-The inferred properties are used to form a prediction about the hidden system.
+The complete simulated planetary system.
 
-## REVEAL
+### Observation
 
-The hidden companion and underlying system are exposed, allowing the prediction to be compared with the simulated truth.
+What the investigator is allowed to see.
+
+### Inference
+
+What can be deduced from the available observations.
+
+### Validation
+
+Comparison of the inferred result with the hidden simulated system.
+
+This prevents the simulation from becoming simply a visualization of a planetary system that the user already knows.
+
+---
+
+# Scientific Design Principles
+
+### Correct orbital convention
+
+The implementation uses the standard astronomical inclination convention:
+
+`0° = face-on`
+
+`90° = edge-on`
+
+### Physical transit geometry
+
+Transit detection uses projected planet-star separation and stellar/planetary radii.
+
+### Numerical gravitational dynamics
+
+The planetary system is evolved using gravitational interactions rather than relying exclusively on a pre-scripted visual animation.
+
+### Hidden information
+
+The companion planet is withheld during the investigation stage.
+
+### Observable consequences
+
+The inference is based on measurable timing behaviour generated by the simulated system.
+
+### Ground-truth validation
+
+The final reveal allows the inferred behaviour to be compared with the underlying simulated system.
 
 ---
 
 # TESS Connection
 
-The project is inspired by the observational strategy of the **Transiting Exoplanet Survey Satellite (TESS)**.
+The project is inspired by the observational principles of NASA's **Transiting Exoplanet Survey Satellite (TESS)**.
 
-TESS detects exoplanets primarily through the transit method: when a planet passes between its host star and the observer, it can cause a small reduction in observed stellar brightness.
+TESS uses the transit method to search for planets by measuring small changes in stellar brightness when a planet passes between its host star and the observer.
 
-TESS Hidden Architect extends this idea conceptually.
+TESS Hidden Architect builds an educational simulation around a related idea:
 
-Instead of asking only:
+> What can the behaviour of an observed planet tell us about another planet that is not directly visible?
 
-> **Can we observe a planet transit?**
+The project therefore connects:
 
-the simulation asks:
-
-> **What can the timing behaviour of an observed planet tell us about another planet that is not directly visible?**
-
-This creates an educational model of **indirect exoplanet detection**.
-
----
-
-# What This Simulation Is
-
-* A scientifically motivated exoplanet simulation
-* A numerical planetary-dynamics experiment
-* A TESS-inspired observational model
-* An interactive investigation of transit timing
-* An illustration of indirect detection
-* An example of inference followed by validation
-* An educational visualization of gravitational perturbations
+```text
+Transit Observation
+        ↓
+Orbital Timing
+        ↓
+Gravitational Perturbation
+        ↓
+Indirect Evidence
+        ↓
+Planetary Inference
+```
 
 ---
 
-# What This Simulation Is Not
+# What This Project Demonstrates
 
-The project is not intended to be:
+The project combines:
 
-* a replacement for professional TESS data-analysis pipelines
-* a complete Bayesian exoplanet parameter-estimation framework
-* a complete treatment of stellar activity and instrumental systematics
-* a precision fit to a particular confirmed exoplanetary system
-* a claim that the simulated planetary system represents a real observed star system
+* Newtonian gravitational dynamics
+* Numerical orbital evolution
+* Orbital-coordinate transformations
+* Observer-plane projection
+* Transit geometry
+* Transit-event detection
+* Synthetic observational data
+* Transit timing analysis
+* TTV / O-C analysis
+* Scientific inference
+* Hidden-system validation
+* Interactive scientific visualization
 
-The purpose is to demonstrate the physical reasoning and computational workflow behind indirect detection in an accessible interactive environment.
+---
+
+# What This Project Is Not
+
+This project is a **scientifically motivated educational simulation**, not a professional exoplanet-analysis pipeline.
+
+It is not intended to be:
+
+* a replacement for professional TESS data-analysis software
+* a complete Bayesian parameter-estimation framework
+* a precision fit to a specific confirmed exoplanetary system
+* a complete model of stellar activity and instrumental systematics
+* a claim that the simulated planetary system corresponds to a real observed star system
+
+The goal is to demonstrate the physical reasoning connecting gravitational dynamics with observable timing signatures.
+
+---
+
+# Limitations
+
+The simulation intentionally uses a controlled environment.
+
+Possible simplifications include:
+
+* synthetic rather than archival observational data
+* simplified observational noise
+* simplified stellar properties
+* simplified photometric modelling
+* limited planetary-system complexity
+* simplified inference compared with professional statistical analyses
+* idealized observer geometry
+
+These limitations allow the core scientific relationship between dynamics, observations, and inference to remain understandable and interactive.
 
 ---
 
 # Technology
 
-The project combines:
+The project uses:
 
 * **Python**
 * Numerical gravitational dynamics
-* Orbital-coordinate transformations
-* Synthetic transit detection
-* Transit timing analysis
-* Local mission server
-* **HTML / CSS / JavaScript**
+* Orbital mechanics
+* Transit detection
+* Timing analysis
+* HTML
+* CSS
+* JavaScript
 * Canvas-based visualization
-* Interactive scientific presentation
+* Local mission server
 
-The backend provides the physical and observational simulation while the frontend presents the experiment as an interactive mission.
+---
+
+# Running the Simulation
+
+## Requirements
+
+A Python installation capable of running the project's dependencies is required.
+
+From the project directory:
+
+```cmd
+cd F:\Simathon\My_Final_Submission
+```
+
+Set the source directory on the Python path:
+
+```cmd
+set PYTHONPATH=src
+```
+
+Launch the mission server:
+
+```cmd
+python -m tess_hidden_architect.app.main
+```
+
+The local mission interface is served at:
+
+```text
+http://127.0.0.1:8000/
+```
+
+Open that address in a browser.
+
+To stop the server:
+
+```text
+Ctrl + C
+```
+
+---
+
+# Repository Structure
+
+```text
+TessHiddenArtifact/
+│
+├── src/
+│   └── tess_hidden_architect/
+│       ├── physics/
+│       ├── observation/
+│       └── app/
+│
+├── tests/
+│
+├── README.md
+├── pyproject.toml
+└── .gitignore
+```
 
 ---
 
 # Educational Objective
 
-The project demonstrates a fundamental principle of scientific investigation:
+The simulation illustrates an important principle of scientific investigation:
 
 > **Observation is not the same as explanation.**
 
-A measurement may reveal an effect without directly revealing its cause.
+A measurement can reveal an effect without directly revealing its cause.
 
 The scientific workflow is therefore:
 
-$$
-\boxed{
-\text{Measure}
-\rightarrow
-\text{Identify Pattern}
-\rightarrow
-\text{Build Model}
-\rightarrow
-\text{Make Prediction}
-\rightarrow
-\text{Test}
-}
-$$
+```text
+MEASURE
+   ↓
+IDENTIFY A PATTERN
+   ↓
+BUILD A MODEL
+   ↓
+MAKE A PREDICTION
+   ↓
+TEST THE PREDICTION
+```
 
-TESS Hidden Architect turns this process into an interactive experience.
+TESS Hidden Architect turns that workflow into an interactive astronomical investigation.
 
 ---
 
-# Limitations & Scope
+# The Central Message
 
-The simulation is intentionally designed as a scientifically motivated educational model rather than a professional exoplanet-analysis package.
+The entire project can be reduced to one physical idea:
 
-Important simplifications may include:
+```text
+The planet is hidden.
+Its gravity is not.
+```
 
-* simplified stellar and planetary properties
-* synthetic rather than archival observational data
-* simplified observational noise
-* simplified inference compared with professional statistical fitting
-* limited planetary-system complexity
-* idealized observer geometry
-* simplified photometric modelling
+A hidden companion can influence an observable planet.
 
-These limitations are deliberate: the project prioritizes demonstrating the connection between **gravitational dynamics, observable timing signatures, and scientific inference**.
+That influence can modify the observable planet's motion.
 
----
+The modified motion can change transit times.
 
-# Core Scientific Idea
+Those timing changes can provide evidence for the hidden body.
 
-The entire project can be summarized as:
-
-$$
-\boxed{
-\text{Invisible Companion}
-\rightarrow
-\text{Gravitational Influence}
-\rightarrow
-\text{Observable Timing Signal}
-\rightarrow
-\text{Inference}
-\rightarrow
-\text{Validation}
-}
-$$
-
-The hidden planet does not have to announce itself directly.
-
-It can reveal itself through the motion of another world.
+The simulation then lets the investigator test that inference against the underlying system.
 
 ---
 
-# Final Summary
+# Project Philosophy
 
-**TESS Hidden Architect** is a TESS-inspired computational experiment about indirect exoplanet detection.
+TESS Hidden Architect is designed around three principles:
 
-A visible transiting planet acts as the observational probe.
+### Physics creates the signal.
 
-A hidden companion gravitationally perturbs the system.
+The observable behaviour originates from the simulated gravitational system.
 
-Those perturbations can influence the measured transit timings.
+### Data hides the cause.
 
-The investigator uses those timing signatures to infer the presence of the hidden companion.
+The investigator initially sees observations rather than the complete planetary architecture.
 
-The final reveal then exposes the underlying simulated system and provides a validation step.
+### Inference reveals the structure.
 
-The central mission is therefore:
+The hidden companion is discovered conceptually through its observable gravitational fingerprint and validated during the final reveal.
+
+---
+
+# Final Mission
 
 ```text
 OBSERVE
@@ -809,6 +688,8 @@ PREDICT
 REVEAL
 ```
 
-**The planet is hidden.
-Its gravity is not.**
+**TESS Hidden Architect** transforms orbital mechanics into an investigation of an unseen world.
 
+The goal is not simply to show that a planet exists.
+
+It is to demonstrate **how we can know that something is there even when we cannot see it directly.**
