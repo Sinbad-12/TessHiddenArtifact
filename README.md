@@ -693,3 +693,14 @@ REVEAL
 The goal is not simply to show that a planet exists.
 
 It is to demonstrate **how we can know that something is there even when we cannot see it directly.**
+
+1. Clone or download the repository.
+2. Open a terminal in the project directory.
+3. Run:
+
+   set PYTHONPATH=src
+   python -m tess_hidden_architect.app.main
+
+4. Open http://127.0.0.1:8000/ in a browser.
+
+No virtual environment, API keys, external services, or additional environment configuration are required.
